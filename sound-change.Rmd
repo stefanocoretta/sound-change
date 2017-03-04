@@ -1,0 +1,342 @@
+---
+title: "Modelling push chains in sound change"
+author: "Stefano Coretta"
+date: \today
+output:
+  pdf_document:
+    highlight: tango
+    latex_engine: xelatex
+    number_sections: yes
+    citation_package: natbib
+bibliography: linguistics.bib
+biblio-style: unified.bst
+indent: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(zipfR)
+library(ggplot2)
+theme_set(theme_bw())
+library(dplyr)
+```
+
+# Simulation 1
+
+The first simulation models the effects of an enrouching category affected by a bias on the category towards which the former is moving. In our case, the encrouching category is the the BAT vowel, while the other category is the BET vowel.
+
+The following chunks define some functions that will be used to initialise a lexicon of words containing either a BAT or a BET vowel.
+
+The function `createLexicon()` generates and empty lexicon of specified `size` and it assings the specified `frequency` distribution to the words.
+
+```{r createLexicon}
+createLexicon <- function(size, frequency, group.size) {
+
+    word <- seq(1, size)
+    vowel <- rep(c("BAT", "BET"), size)
+    class <- sample(rep(1:(size/group.size), each = group.size))
+#    class <- c(rbind(sample(1:(size/group.size)), sample(1:(size/group.size))))
+    cloud <- list()
+
+    lexicon <- list()
+
+    for (i in 1:size) {
+        lexicon[[i]] <- list(word[i], frequency[i], vowel[i], cloud, class[i])
+    }
+
+    return(lexicon)
+}
+```
+
+The frequency distribution is produced by the following function, `zipfDistr()`. The distribution is a random sample from a Zipfian distribution (it uses the `zipfR` package).
+
+```{r zipfDistr}
+zipfDistr <- function(size) {
+    zipf.model <- lnre("zm", alpha = 2/7, B = 0.1)
+    zipf.sample <- rlnre(zipf.model, n = size)
+    zipf.distr <- sort(as.numeric(as.character(zipf.sample)))
+    return(zipf.distr)
+}
+```
+
+We then need a function for generating values for the BAT and BET vowels in the lexicon. Since the main change affected the second formant (F1), the function will return F1 values (in Barks). The function takes a `target` value, it applies random noise and a `bias` (if specified; the default is `0`). A noise window of 0.5 (between -0.25 and 0.25) is used for the application of the production noise.
+
+```{r formants}
+produceFormants <- function(target, bias = 0) {
+    noise <- sample(seq(-0.2, 0.2, by = 0.1), 1)
+    outcome <- target + noise + bias
+    return(outcome)
+}
+```
+
+The function `populateLexicon()` adds formant values to the lexical items in the lexicon, following a normal distribution. It follows the principles outlined in @pierrehumbert2001 and @wedel2007. The chosen standard values for F1 are 6.5 Barks for BAT and 5 for BET.
+
+```{r populateLexicon}
+populateLexicon <- function(lexicon, iterations, probs) {
+    for (i in 1:iterations) {
+        item <- sample(seq(1, length(lexicon)), 1, prob = probs)
+        cloud.size <- length(lexicon[[item]][[4]])
+        if (item %% 2 != 0) {
+            if (cloud.size == 0) {
+                lexicon[[item]][[4]][[1]] <- produceFormants(bat.f1)
+            } else if (cloud.size == 1) {
+                target <- lexicon[[item]][[4]][[1]]
+                lexicon[[item]][[4]][[cloud.size + 1]] <- produceFormants(target)
+            } else {
+                target <- sample(unlist(lexicon[[item]][[4]]), 1)
+                lexicon[[item]][[4]][[cloud.size + 1]] <- produceFormants(target)
+            }
+        } else {
+            if (cloud.size == 0) {
+                lexicon[[item]][[4]][[1]] <- produceFormants(bet.f1)
+            } else if (cloud.size == 1) {
+                target <- lexicon[[item]][[4]][[1]]
+                lexicon[[item]][[4]][[cloud.size + 1]] <- produceFormants(target)
+            } else {
+                target <- sample(unlist(lexicon[[item]][[4]]), 1)
+                lexicon[[item]][[4]][[cloud.size + 1]] <- produceFormants(target)
+            }
+        }
+    }
+    return(lexicon)
+}
+```
+
+We can now populate a lexicon with exemplars for BAT and BET vowels.
+
+```{r lexicon}
+set.seed(4321)
+
+lexicon.size = 1000
+frequency <- zipfDistr(lexicon.size)
+group.size <- 10
+lexicon <- createLexicon(lexicon.size, frequency, group.size)
+
+iterations <- 50000
+bat.f1 <- 6.5
+bet.f1 <- 5.5
+lexicon <- populateLexicon(lexicon, iterations, frequency)
+source.lexicon <- lexicon
+```
+
+```{r groups}
+groups <- list()
+
+for (i in 1:(lexicon.size/group.size)) {
+    groups[[i]] <- list(i, list())
+}
+
+for (i in 1:lexicon.size) {
+    class <- lexicon[[i]][[5]]
+    groups[[class]][[2]][[length(groups[[class]][[2]]) + 1]] <- i
+}
+
+change <- data.frame("word" = numeric(),
+                     "time" = numeric(),
+                     "frequency" = numeric(),
+                     "f1" = numeric(),
+                     "vowel" = character()
+                     )
+```
+
+Now we can implement the vowel shift.
+
+```{r vowel-shift}
+iterations <- 100000
+bias <- -0.5
+
+for (iteration in 1:iterations) {
+    word <- sample(1:lexicon.size, 1, prob = frequency)
+
+    #### Produce the chosen word ####
+
+    if (word %% 2 != 0) { # odd words have "BAT"
+
+        #### The chosen word is a BAT word ####
+
+        if (length(lexicon[[word]][[4]]) == 0) {
+            lexicon[[word]][[4]] <- list(produceFormants(bat.f1, bias))
+        } else {
+            target <- sample(1:length(lexicon[[word]][[4]]), 1)
+            outcome <- produceFormants(lexicon[[word]][[4]][[target]], bias)
+            lexicon[[word]][[4]][[length(lexicon[[word]][[4]]) + 1]] <- outcome
+        }
+
+        #### Categorisation process ####
+
+        class <- lexicon[[word]][[5]][[1]]
+        pool <- NULL
+        for (i in 1:group.size){
+            other.word <- groups[[class]][[2]][[i]]
+            if (other.word %% 2 == 0) {
+                pool <- c(pool, unlist(lexicon[[other.word]][[4]]))
+            }
+        }
+        if (length(pool) > 0) {# some words don't have exemplars
+            if (outcome >= min(pool) & outcome <= max(pool)) {
+                encoding.prob <- lexicon[[word]][[2]] /
+                                max(frequency)
+                encode <- sample(c("yes", "no"),
+                                 1,
+                                 prob = c(encoding.prob,
+                                          1 - encoding.prob
+                                 )
+                )
+
+                #### Encoding function ####
+                if (encode == "no") {
+                    for (i in 1:group.size) {
+                        other.word <- groups[[class]][[2]][[i]]
+                        if (length(lexicon[[other.word]][[4]]) != 0) {
+                            for (j in length(lexicon[[other.word]][[4]]):1) {
+                                if (lexicon[[other.word]][[4]][[j]] == outcome) {
+                                    if (length(lexicon[[other.word]][[4]]) == 1) {
+                                        lexicon[[other.word]][[4]] <- list()
+                                    } else {
+                                        lexicon[[other.word]][[4]][[j]] <- NULL
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    } else {
+
+        #### The chosen word is a BET word ####
+
+        if (length(lexicon[[word]][[4]]) == 0) {
+            lexicon[[word]][[4]] <- list(produceFormants(bet.f1))
+        } else {
+            target <- sample(1:length(lexicon[[word]][[4]]), 1)
+            outcome <- produceFormants(lexicon[[word]][[4]][[target]])
+            lexicon[[word]][[4]][[length(lexicon[[word]][[4]]) + 1]] <- outcome
+        }
+
+        #### Categorisation process ####
+
+        class <- lexicon[[word]][[5]][[1]]
+        pool <- NULL
+        for (i in 1:group.size){
+            other.word <- groups[[class]][[2]][[i]]
+            if (other.word %% 2 != 0) {
+                pool <- c(pool, unlist(lexicon[[other.word]][[4]]))
+            }
+        }
+        if (length(pool) > 0) {# some words don't have exemplars
+            if (outcome >= min(pool) & outcome <= max(pool)) {
+                encoding.prob <- lexicon[[word]][[2]] /
+                                max(frequency)
+                encode <- sample(c("yes", "no"),
+                                 1,
+                                 prob = c(encoding.prob,
+                                          1 - encoding.prob
+                                 )
+                )
+
+                #### Encoding function ####
+                if (encode == "no") {
+                    for (i in 1:group.size) {
+                        other.word <- groups[[class]][[2]][[i]]
+                        if (length(lexicon[[other.word]][[4]]) != 0) {
+                            for (j in length(lexicon[[other.word]][[4]]):1) {
+                                if (lexicon[[other.word]][[4]][[j]] == outcome) {
+                                    if (length(lexicon[[other.word]][[4]]) == 1) {
+                                        lexicon[[other.word]][[4]] <- list()
+                                    } else {
+                                        lexicon[[other.word]][[4]][[j]] <- NULL
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    if (iteration %% 1000 == 0) {
+        now.frequency <- NULL
+        f1.mean <- NULL
+        for (word in 1:lexicon.size) {
+            word.frequency <- lexicon[[word]][[2]]
+            now.frequency <- c(now.frequency, word.frequency)
+            word.f1.mean <- mean(unlist(lexicon[[word]][[4]]))
+            f1.mean <- c(f1.mean, word.f1.mean)
+        }
+        vowelss <- rep(c("BAT", "BET"), lexicon.size/2)
+        words <- seq(1, lexicon.size)
+        time <- rep(iteration, lexicon.size)
+        change.current <- data.frame("word" = words, time, "frequency" = now.frequency, "f1" = f1.mean, "vowel" = vowelss)
+        change <- rbind(change, change.current)
+    }
+}
+```
+
+
+```{r plot-source, eval = FALSE}
+bat.source <- NULL
+for (i in seq(1, 1000, by = 2)) {
+    bat.source <- c(bat.source, unlist(source.lexicon[[i]][[4]]))
+}
+
+bet.source <- NULL
+for (i in seq(2, 1000, by = 2)) {
+    bet.source <- c(bet.source, unlist(source.lexicon[[i]][[4]]))
+}
+
+vowels.source <- data.frame(
+    f1 = c(bat.source, bet.source),
+    vowel = c(rep("BAT", times = length(bet.source)), rep("BET", times = length(bat.source)))
+)
+
+ggplot(vowels.source, aes(f1, colour = vowel)) +
+    geom_density() +
+    xlim(2, 9)
+```
+
+
+```{r plot-final, eval = FALSE}
+bat <- NULL
+for (i in seq(1, 1000, by = 2)) {
+    bat <- c(bat, unlist(lexicon[[i]][[4]]))
+}
+
+bet <- NULL
+for (i in seq(2, 1000, by = 2)) {
+    bet <- c(bet, unlist(lexicon[[i]][[4]]))
+}
+
+vowels <- data.frame(
+    f1 = c(bat, bet),
+    vowel = c(rep("BAT", times = length(bet)), rep("BET", times = length(bat)))
+)
+
+ggplot(vowels, aes(f1, colour = vowel)) +
+    geom_density() +
+    xlim(2, 9)
+```
+
+```{r vowel-plot, eval = FALSE}
+ggplot(change, aes(time, f1, colour = vowel)) +
+    geom_smooth(se = FALSE)
+```
+
+```{r freq-bin}
+change <- mutate(change,
+                 freq.bin = ifelse(frequency < max(frequency)/2,
+                                   "low",
+                                   "high"
+                                   )
+                 )
+```
+
+```{r freq-plot}
+ggplot(change, aes(time, f1, colour = freq.bin)) +
+    facet_grid(. ~ vowel) +
+    geom_smooth(se = FALSE) +
+    xlab("time (iterations)") +
+    ylab("F1 (Barks)") +
+    scale_colour_discrete(name = "Frequency bin")
+```
