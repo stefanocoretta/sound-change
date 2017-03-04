@@ -72,13 +72,13 @@ produceFormants <- function(target, bias = 0) {
 The function `populateLexicon()` adds formant values to the lexical items in the lexicon, following a normal distribution. It follows the principles outlined in @pierrehumbert2001 and @wedel2007. The chosen standard values for F1 are 6.5 Barks for BAT and 5 for BET.
 
 ```{r populateLexicon}
-populateLexicon <- function(lexicon, iterations, probs, bat.f2, bet.f2) {
+populateLexicon <- function(lexicon, iterations, probs, bat.f1, bet.f1) {
     for (i in 1:iterations) {
         item <- sample(seq(1, length(lexicon)), 1, prob = probs)
         cloud.size <- length(lexicon[[item]][[4]])
         if (item %% 2 != 0) {
             if (cloud.size == 0) {
-                lexicon[[item]][[4]][[1]] <- produceFormants(bat.f2)
+                lexicon[[item]][[4]][[1]] <- produceFormants(bat.f1)
             } else if (cloud.size == 1) {
                 target <- lexicon[[item]][[4]][[1]]
                 lexicon[[item]][[4]][[cloud.size + 1]] <- produceFormants(target)
@@ -88,7 +88,7 @@ populateLexicon <- function(lexicon, iterations, probs, bat.f2, bet.f2) {
             }
         } else {
             if (cloud.size == 0) {
-                lexicon[[item]][[4]][[1]] <- produceFormants(bet.f2)
+                lexicon[[item]][[4]][[1]] <- produceFormants(bet.f1)
             } else if (cloud.size == 1) {
                 target <- lexicon[[item]][[4]][[1]]
                 lexicon[[item]][[4]][[cloud.size + 1]] <- produceFormants(target)
@@ -113,9 +113,9 @@ group.size <- 10
 lexicon <- createLexicon(lexicon.size, frequency, group.size)
 
 iterations <- 50000
-bat.f2 <- 6.5
-bet.f2 <- 5.5
-lexicon <- populateLexicon(lexicon, iterations, frequency, bat.f2, bet.f2)
+bat.f1 <- 6.5
+bet.f1 <- 5.5
+lexicon <- populateLexicon(lexicon, iterations, frequency, bat.f1, bet.f1)
 source.lexicon <- lexicon
 ```
 
