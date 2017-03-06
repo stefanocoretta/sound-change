@@ -340,3 +340,6 @@ ggplot(change, aes(time, f1, colour = freq.bin)) +
     ylab("F1 (Barks)") +
     scale_colour_discrete(name = "Frequency bin")
 ```
+
+# Simulation 2
+
