@@ -61,7 +61,7 @@ zipfDistr <- function(size) {
 
 We then need a function for generating values for the BAT and BET vowels in the lexicon. Since the main change affected the second formant (F1), the function will return F1 values (in Barks). The function takes a `target` value, it applies random noise and a `bias` (if specified; the default is `0`). A noise window of 0.5 (between -0.25 and 0.25) is used for the application of the production noise.
 
-```{r formants}
+```{r produceFormants}
 produceFormants <- function(target, bias = 0) {
     noise <- sample(seq(-0.2, 0.2, by = 0.1), 1)
     outcome <- target + noise + bias
@@ -343,3 +343,74 @@ ggplot(change, aes(time, f1, colour = freq.bin)) +
 
 # Simulation 2
 
+```{r createLexicon2}
+createLexicon2 <- function(size, frequency, group.size) {
+
+    word <- seq(1, size)
+    vowel <- rep(c("BAT", "BET", "BIT"), size)
+    class <- sample(rep(1:(size/group.size), each = group.size))
+#    class <- c(rbind(sample(1:(size/group.size)), sample(1:(size/group.size))))
+    cloud.f1 <- list()
+    cloud.f2 <- list()
+    lexicon <- list()
+
+    for (i in 1:size) {
+        lexicon[[i]] <- list(word[i], frequency[i], vowel[i], cloud.f1, cloud.f2, class[i])
+    }
+
+    return(lexicon)
+}
+```
+
+```{r populateLexicon2}
+populateLexicon2 <- function(lexicon, iterations, probs, bat.f1, bat.f2, bet.f1, bet.f2, bit.f1, bit.f2) {
+    for (i in 1:iterations) {
+        item <- sample(seq(1, length(lexicon)), 1, prob = probs)
+        cloud.size <- length(lexicon[[item]][[4]])
+        if (cloud.size == 0) {
+            if (lexicon[[item]][[3]] == "BAT") {
+                f1 <- bat.f1
+                f2 <- bat.f2
+            } else if (lexicon[[item]][[3]] == "BIT") {
+                f1 <- bet.f1
+                f2 <- bet.f2
+            } else {
+                f1 <- bit.f1
+                f2 <- bit.f2
+            }
+            lexicon[[item]][[4]][[1]] <- produceFormants(bat.f1)
+            lexicon[[item]][[5]][[1]] <- produceFormants(bat.f2)
+        } else if (cloud.size == 1) {
+            target <- lexicon[[item]][[4]][[1]]
+            lexicon[[item]][[4]][[cloud.size + 1]] <- produceFormants(target)
+            target <- lexicon[[item]][[5]][[1]]
+            lexicon[[item]][[5]][[cloud.size + 1]] <- produceFormants(target)
+        } else {
+            target <- sample(unlist(lexicon[[item]][[4]]), 1)
+            lexicon[[item]][[4]][[cloud.size + 1]] <- produceFormants(target)
+            target <- sample(unlist(lexicon[[item]][[5]]), 1)
+            lexicon[[item]][[5]][[cloud.size + 1]] <- produceFormants(target)
+        }
+    }
+    return(lexicon)
+}
+```
+
+```{r lexicon2}
+set.seed(4321)
+
+lexicon.size = 1000
+frequency <- zipfDistr(lexicon.size)
+group.size <- 10
+lexicon2 <- createLexicon2(lexicon.size, frequency, group.size)
+
+iterations <- 50000
+bat.f1 <- 6.5
+bat.f2 <- 12.7
+bet.f1 <- 5.5
+bet.f2 <- 13
+bit.f1 <- 4
+bit.f2 <- 13.3
+lexicon2 <- populateLexicon2(lexicon2, iterations, frequency, bat.f1, bat.f2, bet.f1, bet.f2, bit.f1, bit.f2)
+source.lexicon2 <- lexicon2
+```
