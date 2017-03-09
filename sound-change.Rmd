@@ -451,4 +451,10 @@ vowels.source2 <- data.frame(
 
 ggplot(vowels.source2, aes(f2, f1, colour = vowel)) +
     geom_point(alpha = 0.5)
+
+ggplot(vowels.source2, aes(f1, colour = vowel)) +
+    geom_density()
+
+ggplot(vowels.source2, aes(f2, colour = vowel)) +
+    geom_density()
 ```
