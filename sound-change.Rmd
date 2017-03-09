@@ -414,3 +414,41 @@ bit.f2 <- 13.3
 lexicon2 <- populateLexicon2(lexicon2, iterations, frequency, bat.f1, bat.f2, bet.f1, bet.f2, bit.f1, bit.f2)
 source.lexicon2 <- lexicon2
 ```
+
+```{r plot-source2, eval = FALSE}
+bat.f1.source <- NULL
+for (i in seq(1, 1000, by = 3)) {
+    bat.f1.source <- c(bat.f1.source, unlist(source.lexicon2[[i]][[4]]))
+}
+bat.f2.source <- NULL
+for (i in seq(1, 1000, by = 3)) {
+    bat.f2.source <- c(bat.f2.source, unlist(source.lexicon2[[i]][[5]]))
+}
+
+bet.f1.source <- NULL
+for (i in seq(2, 1000, by = 3)) {
+    bet.f1.source <- c(bet.f1.source, unlist(source.lexicon2[[i]][[4]]))
+}
+bet.f2.source <- NULL
+for (i in seq(2, 1000, by = 3)) {
+    bet.f2.source <- c(bet.f2.source, unlist(source.lexicon2[[i]][[5]]))
+}
+
+bit.f1.source <- NULL
+for (i in seq(3, 1000, by = 3)) {
+    bit.f1.source <- c(bit.f1.source, unlist(source.lexicon2[[i]][[4]]))
+}
+bit.f2.source <- NULL
+for (i in seq(3, 1000, by = 3)) {
+    bit.f2.source <- c(bit.f2.source, unlist(source.lexicon2[[i]][[5]]))
+}
+
+vowels.source2 <- data.frame(
+    f1 = c(bat.f1.source, bet.f1.source, bit.f1.source),
+    f2 = c(bat.f2.source, bet.f2.source, bit.f2.source),
+    vowel = c(rep("BAT", times = length(bat.f1.source)), rep("BET", times = length(bet.f1.source)), rep("BIT", times = length(bit.f1.source)))
+)
+
+ggplot(vowels.source2, aes(f2, f1, colour = vowel)) +
+    geom_point(alpha = 0.5)
+```
