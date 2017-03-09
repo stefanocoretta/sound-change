@@ -371,15 +371,15 @@ populateLexicon2 <- function(lexicon, iterations, probs, bat.f1, bat.f2, bet.f1,
             if (lexicon[[item]][[3]] == "BAT") {
                 f1 <- bat.f1
                 f2 <- bat.f2
-            } else if (lexicon[[item]][[3]] == "BIT") {
+            } else if (lexicon[[item]][[3]] == "BET") {
                 f1 <- bet.f1
                 f2 <- bet.f2
             } else {
                 f1 <- bit.f1
                 f2 <- bit.f2
             }
-            lexicon[[item]][[4]][[1]] <- produceFormants(bat.f1)
-            lexicon[[item]][[5]][[1]] <- produceFormants(bat.f2)
+            lexicon[[item]][[4]][[1]] <- produceFormants(f1)
+            lexicon[[item]][[5]][[1]] <- produceFormants(f2)
         } else if (cloud.size == 1) {
             target <- lexicon[[item]][[4]][[1]]
             lexicon[[item]][[4]][[cloud.size + 1]] <- produceFormants(target)
