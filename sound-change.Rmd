@@ -622,3 +622,47 @@ ggplot(vowels.source2, aes(f1, colour = vowel)) +
 ggplot(vowels.source2, aes(f2, colour = vowel)) +
     geom_density()
 ```
+
+```{r plot-final2, eval = FALSE}
+bat.f1.final <- NULL
+for (i in seq(1, 1000, by = 3)) {
+    bat.f1.final <- c(bat.f1.final, unlist(lexicon2[[i]][[4]]))
+}
+bat.f2.final <- NULL
+for (i in seq(1, 1000, by = 3)) {
+    bat.f2.final <- c(bat.f2.final, unlist(lexicon2[[i]][[5]]))
+}
+
+bet.f1.final <- NULL
+for (i in seq(2, 1000, by = 3)) {
+    bet.f1.final <- c(bet.f1.final, unlist(lexicon2[[i]][[4]]))
+}
+bet.f2.final <- NULL
+for (i in seq(2, 1000, by = 3)) {
+    bet.f2.final <- c(bet.f2.final, unlist(lexicon2[[i]][[5]]))
+}
+
+bit.f1.final <- NULL
+for (i in seq(3, 1000, by = 3)) {
+    bit.f1.final <- c(bit.f1.final, unlist(lexicon2[[i]][[4]]))
+}
+bit.f2.final <- NULL
+for (i in seq(3, 1000, by = 3)) {
+    bit.f2.final <- c(bit.f2.final, unlist(lexicon2[[i]][[5]]))
+}
+
+vowels.final2 <- data.frame(
+    f1 = c(bat.f1.final, bet.f1.final, bit.f1.final),
+    f2 = c(bat.f2.final, bet.f2.final, bit.f2.final),
+    vowel = c(rep("BAT", times = length(bat.f1.final)), rep("BET", times = length(bet.f1.final)), rep("BIT", times = length(bit.f1.final)))
+)
+
+ggplot(vowels.final2, aes(f2, f1, colour = vowel)) +
+    geom_point(alpha = 0.5)
+
+ggplot(vowels.final2, aes(f1, colour = vowel)) +
+    geom_density()
+
+ggplot(vowels.final2, aes(f2, colour = vowel)) +
+    geom_density()
+```
