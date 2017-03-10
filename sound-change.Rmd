@@ -492,8 +492,10 @@ for (iteration in 1:iterations) {
                                     lexicon2[[other.word]][[5]][[j]] == outcome.f2) {
                                     if (length(lexicon2[[other.word]][[4]]) == 1) {
                                         lexicon2[[other.word]][[4]] <- list()
+                                        lexicon2[[other.word]][[5]] <- list()
                                     } else {
                                         lexicon2[[other.word]][[4]][[j]] <- NULL
+                                        lexicon2[[other.word]][[5]][[j]] <- NULL
                                     }
                                 }
                             }
@@ -549,8 +551,10 @@ for (iteration in 1:iterations) {
                                     lexicon2[[other.word]][[5]][[j]] == outcome.f2) {
                                     if (length(lexicon2[[other.word]][[4]]) == 1) {
                                         lexicon2[[other.word]][[4]] <- list()
+                                        lexicon2[[other.word]][[5]] <- list()
                                     } else {
                                         lexicon2[[other.word]][[4]][[j]] <- NULL
+                                        lexicon2[[other.word]][[5]][[j]] <- NULL
                                     }
                                 }
                             }
