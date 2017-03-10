@@ -415,6 +415,26 @@ lexicon2 <- populateLexicon2(lexicon2, iterations, frequency, bat.f1, bat.f2, be
 source.lexicon2 <- lexicon2
 ```
 
+```{r groups2}
+groups2 <- list()
+
+for (i in 1:(lexicon.size/group.size)) {
+    groups2[[i]] <- list(i, list())
+}
+
+for (i in 1:lexicon.size) {
+    class <- lexicon2[[i]][[6]]
+    groups2[[class]][[2]][[length(groups2[[class]][[2]]) + 1]] <- i
+}
+
+change <- data.frame("word" = numeric(),
+                     "time" = numeric(),
+                     "frequency" = numeric(),
+                     "f1" = numeric(),
+                     "vowel" = character()
+                     )
+```
+
 ```{r vowel-shift2}
 iterations <- 100000
 bias <- -0.5
