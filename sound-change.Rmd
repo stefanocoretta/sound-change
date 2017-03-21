@@ -436,7 +436,7 @@ change2 <- data.frame("word" = numeric(),
 ```
 
 ```{r vowel-shift2}
-iterations <- 100000
+iterations <- 20000
 f1.bias <- -0.5
 f2.bias <- 0.05
 
@@ -583,6 +583,74 @@ for (iteration in 1:iterations) {
                 }
             }
         }
+    } else {
+        #### The chosen word is a BIT word ####
+
+        if (length(lexicon2[[word]][[4]]) == 0) {
+            lexicon2[[word]][[4]] <- list(produceFormants(bit.f1))
+            lexicon2[[word]][[5]] <- list(produceFormants(bit.f2))
+        } else {
+            target <- sample(1:length(lexicon2[[word]][[4]]), 1)
+            outcome.f1 <- produceFormants(lexicon2[[word]][[4]][[target]])
+            # if (outcome.f1 < 4) {
+            #     outcome.f1 <- 4
+            # } else if (outcome.f1 > 6.5) {
+            #     outcome.f1 <- 6.5
+            # }
+            lexicon2[[word]][[4]][[length(lexicon2[[word]][[4]]) + 1]] <- outcome.f1
+            target <- sample(1:length(lexicon2[[word]][[5]]), 1)
+            outcome.f2 <- produceFormants(lexicon2[[word]][[5]][[target]])
+            # if (outcome.f2 < 12) {
+            #     outcome.f2 <- 12
+            # } else if (outcome.f2 > 14) {
+            #     outcome.f2 <- 14
+            # }
+            lexicon2[[word]][[5]][[length(lexicon2[[word]][[5]]) + 1]] <- outcome.f2
+        }
+
+        #### Categorisation process ####
+
+        class <- lexicon2[[word]][[6]][[1]]
+        pool <- NULL
+        for (i in 1:group.size){
+            other.word <- groups2[[class]][[2]][[i]]
+            if (other.word %% 2 != 0) {
+                pool <- c(pool, unlist(lexicon2[[other.word]][[4]]))
+            }
+        }
+        if (length(pool) > 0) {# some words don't have exemplars
+            if (outcome.f1 >= min(pool) & outcome.f1 <= max(pool)) {
+                encoding.prob <- lexicon2[[word]][[2]] /
+                                max(frequency)
+                encode <- sample(c("yes", "no"),
+                                 1,
+                                 prob = c(encoding.prob,
+                                          1 - encoding.prob
+                                 )
+                )
+
+                #### Encoding function ####
+                if (encode == "no") {
+                    for (i in 1:group.size) {
+                        other.word <- groups2[[class]][[2]][[i]]
+                        if (length(lexicon2[[other.word]][[4]]) != 0) {
+                            for (j in length(lexicon2[[other.word]][[4]]):1) {
+                                if (lexicon2[[other.word]][[4]][[j]] == outcome.f1 &
+                                    lexicon2[[other.word]][[5]][[j]] == outcome.f2) {
+                                    if (length(lexicon2[[other.word]][[4]]) == 1) {
+                                        lexicon2[[other.word]][[4]] <- list()
+                                        lexicon2[[other.word]][[5]] <- list()
+                                    } else {
+                                        lexicon2[[other.word]][[4]][[j]] <- NULL
+                                        lexicon2[[other.word]][[5]][[j]] <- NULL
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 
     if (iteration %% 1000 == 0) {
@@ -594,7 +662,7 @@ for (iteration in 1:iterations) {
             word.f1.mean <- mean(unlist(lexicon2[[word]][[4]]))
             f1.mean <- c(f1.mean, word.f1.mean)
         }
-        vowelss <- rep(c("BAT", "BET"), lexicon.size/2)
+        vowelss <- rep_len(c("BAT", "BET", "BIT"), lexicon.size)
         words <- seq(1, lexicon.size)
         time <- rep(iteration, lexicon.size)
         change.current <- data.frame("word" = words, time, "frequency" = now.frequency, "f1" = f1.mean, "vowel" = vowelss)
@@ -696,7 +764,7 @@ ggplot(vowels.final2, aes(f2, colour = vowel)) +
 ```
 
 ```{r freq-bin-2}
-change2 <- mutate(change,
+change2 <- mutate(change2,
                  freq.bin = ifelse(frequency < max(frequency)/2,
                                    "low",
                                    "high"
