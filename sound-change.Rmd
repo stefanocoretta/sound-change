@@ -477,7 +477,7 @@ for (iteration in 1:iterations) {
         pool <- NULL
         for (i in 1:group.size){
             other.word <- groups2[[class]][[2]][[i]]
-            if (other.word %% 2 == 0) {
+            if (lexicon2[[other.word]][[3]] != "BAT") {
                 pool <- c(pool, unlist(lexicon2[[other.word]][[4]]))
             }
         }
@@ -546,7 +546,7 @@ for (iteration in 1:iterations) {
         pool <- NULL
         for (i in 1:group.size){
             other.word <- groups2[[class]][[2]][[i]]
-            if (other.word %% 2 != 0) {
+            if (lexicon2[[other.word]][[3]] != "BET") {
                 pool <- c(pool, unlist(lexicon2[[other.word]][[4]]))
             }
         }
@@ -614,7 +614,7 @@ for (iteration in 1:iterations) {
         pool <- NULL
         for (i in 1:group.size){
             other.word <- groups2[[class]][[2]][[i]]
-            if (other.word %% 2 != 0) {
+            if (lexicon2[[other.word]][[3]] != "BIT") {
                 pool <- c(pool, unlist(lexicon2[[other.word]][[4]]))
             }
         }
