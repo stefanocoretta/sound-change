@@ -427,7 +427,7 @@ for (i in 1:lexicon.size) {
     groups2[[class]][[2]][[length(groups2[[class]][[2]]) + 1]] <- i
 }
 
-change <- data.frame("word" = numeric(),
+change2 <- data.frame("word" = numeric(),
                      "time" = numeric(),
                      "frequency" = numeric(),
                      "f1" = numeric(),
@@ -598,7 +598,7 @@ for (iteration in 1:iterations) {
         words <- seq(1, lexicon.size)
         time <- rep(iteration, lexicon.size)
         change.current <- data.frame("word" = words, time, "frequency" = now.frequency, "f1" = f1.mean, "vowel" = vowelss)
-        change <- rbind(change, change.current)
+        change2 <- rbind(change2, change.current)
     }
 }
 ```
@@ -693,4 +693,22 @@ ggplot(vowels.final2, aes(f1, colour = vowel)) +
 
 ggplot(vowels.final2, aes(f2, colour = vowel)) +
     geom_density()
+```
+
+```{r freq-bin-2}
+change2 <- mutate(change,
+                 freq.bin = ifelse(frequency < max(frequency)/2,
+                                   "low",
+                                   "high"
+                                   )
+                 )
+```
+
+```{r freq-plot2}
+ggplot(change2, aes(time, f1, colour = freq.bin)) +
+    facet_grid(. ~ vowel) +
+    geom_smooth(se = FALSE) +
+    xlab("time (iterations)") +
+    ylab("F1 (Barks)") +
+    scale_colour_discrete(name = "Frequency bin")
 ```
