@@ -173,7 +173,7 @@ for (iteration in 1:iterations) {
             }
         }
         if (length(pool) > 0) {# some words don't have exemplars
-            if (outcome >= min(pool) & outcome <= max(pool)) {
+            if (outcome <= max(pool)) {
                 encoding.prob <- lexicon[[word]][[2]] /
                                 max(frequency)
                 encode <- sample(c("yes", "no"),
@@ -225,7 +225,7 @@ for (iteration in 1:iterations) {
             }
         }
         if (length(pool) > 0) {# some words don't have exemplars
-            if (outcome >= min(pool) & outcome <= max(pool)) {
+            if (outcome >= min(pool)) {
                 encoding.prob <- lexicon[[word]][[2]] /
                                 max(frequency)
                 encode <- sample(c("yes", "no"),
