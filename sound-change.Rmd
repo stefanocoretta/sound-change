@@ -877,7 +877,7 @@ change3 <- data.frame("word" = numeric(),
 
 ```{r vowel-shift-3}
 iterations <- 100000
-bias <- -0.3
+bias <- -0.2
 
 for (iteration in 1:iterations) {
     word <- sample(1:lexicon.size, 1, prob = frequency)
