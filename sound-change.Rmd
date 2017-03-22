@@ -877,7 +877,7 @@ change3 <- data.frame("word" = numeric(),
 
 ```{r vowel-shift-3}
 iterations <- 100000
-bias <- -0.5
+bias <- -0.3
 
 for (iteration in 1:iterations) {
     word <- sample(1:lexicon.size, 1, prob = frequency)
@@ -962,7 +962,7 @@ for (iteration in 1:iterations) {
             }
         }
         if (length(pool.a) > 0 & length(pool.i) > 0) {# some words don't have exemplars
-            if (outcome >= min(pool.a) | outcome <= max(pool.i)) {
+            if (outcome >= min(pool.a) || outcome <= max(pool.i)) {
                 encoding.prob <- lexicon3[[word]][[2]] /
                                 max(frequency)
                 encode <- sample(c("yes", "no"),
