@@ -107,7 +107,7 @@ We can now populate a lexicon with exemplars for BAT and BET vowels.
 ```{r lexicon}
 set.seed(4321)
 
-lexicon.size = 1000
+lexicon.size <- 1000
 frequency <- zipfDistr(lexicon.size)
 group.size <- 10
 lexicon <- createLexicon(lexicon.size, frequency, group.size)
@@ -842,7 +842,7 @@ populateLexicon3 <- function(lexicon, iterations, probs, bat.f1, bet.f1, bit.f1)
 ```{r lexicon3}
 set.seed(4321)
 
-lexicon.size = 1000
+lexicon.size <- 1000
 frequency <- zipfDistr(lexicon.size)
 group.size <- 10
 lexicon3 <- createLexicon3(lexicon.size, frequency, group.size)
