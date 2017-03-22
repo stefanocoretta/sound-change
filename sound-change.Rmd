@@ -1059,3 +1059,21 @@ for (iteration in 1:iterations) {
     }
 }
 ```
+
+```{r freq-bin}
+change3 <- mutate(change3,
+                 freq.bin = ifelse(frequency < max(frequency)/2,
+                                   "low",
+                                   "high"
+                                   )
+                 )
+```
+
+```{r freq-plot}
+ggplot(change3, aes(time, f1, colour = freq.bin)) +
+    facet_grid(. ~ vowel) +
+    geom_smooth(se = FALSE) +
+    xlab("time (iterations)") +
+    ylab("F1 (Barks)") +
+    scale_colour_discrete(name = "Frequency bin")
+```
