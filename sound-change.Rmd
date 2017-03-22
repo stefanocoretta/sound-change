@@ -897,15 +897,15 @@ for (iteration in 1:iterations) {
         #### Categorisation process ####
 
         class <- lexicon3[[word]][[5]][[1]]
-        pool <- NULL
+        pool.e <- NULL
         for (i in 1:group.size){
             other.word <- groups3[[class]][[2]][[i]]
-            if (other.word %% 2 == 0) {
-                pool <- c(pool, unlist(lexicon3[[other.word]][[4]]))
+            if (lexicon3[[other.word]][[3]] == "BET") {
+                pool.e <- c(pool.e, unlist(lexicon3[[other.word]][[4]]))
             }
         }
-        if (length(pool) > 0) {# some words don't have exemplars
-            if (outcome >= min(pool) & outcome <= max(pool)) {
+        if (length(pool.e) > 0) {# some words don't have exemplars
+            if (outcome <= max(pool.e)) {
                 encoding.prob <- lexicon3[[word]][[2]] /
                                 max(frequency)
                 encode <- sample(c("yes", "no"),
@@ -949,15 +949,18 @@ for (iteration in 1:iterations) {
         #### Categorisation process ####
 
         class <- lexicon3[[word]][[5]][[1]]
-        pool <- NULL
+        pool.a <- NULL
+        pool.i <- NULL
         for (i in 1:group.size){
             other.word <- groups3[[class]][[2]][[i]]
-            if (other.word %% 2 != 0) {
-                pool <- c(pool, unlist(lexicon3[[other.word]][[4]]))
+            if (lexicon3[[other.word]][[3]] == "BAT") {
+                pool.a <- c(pool.a, unlist(lexicon3[[other.word]][[4]]))
+            } else if (lexicon3[[other.word]][[3]] == "BIT") {
+                pool.i <- c(pool.i, unlist(lexicon3[[other.word]][[4]]))
             }
         }
-        if (length(pool) > 0) {# some words don't have exemplars
-            if (outcome >= min(pool) & outcome <= max(pool)) {
+        if (length(pool.a) > 0 & length(pool.i) > 0) {# some words don't have exemplars
+            if (outcome >= min(pool.a) | outcome <= max(pool.i)) {
                 encoding.prob <- lexicon3[[word]][[2]] /
                                 max(frequency)
                 encode <- sample(c("yes", "no"),
@@ -1000,15 +1003,15 @@ for (iteration in 1:iterations) {
         #### Categorisation process ####
 
         class <- lexicon3[[word]][[5]][[1]]
-        pool <- NULL
+        pool.e <- NULL
         for (i in 1:group.size){
             other.word <- groups3[[class]][[2]][[i]]
-            if (other.word %% 2 != 0) {
-                pool <- c(pool, unlist(lexicon3[[other.word]][[4]]))
+            if (lexicon3[[other.word]][[3]] == "BET") {
+                pool.e <- c(pool.e, unlist(lexicon3[[other.word]][[4]]))
             }
         }
-        if (length(pool) > 0) {# some words don't have exemplars
-            if (outcome >= min(pool) & outcome <= max(pool)) {
+        if (length(pool.e) > 0) {# some words don't have exemplars
+            if (outcome >= min(pool.e)) {
                 encoding.prob <- lexicon3[[word]][[2]] /
                                 max(frequency)
                 encode <- sample(c("yes", "no"),
