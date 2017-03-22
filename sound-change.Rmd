@@ -1060,6 +1060,55 @@ for (iteration in 1:iterations) {
 }
 ```
 
+```{r plot-source-3, eval = FALSE}
+bat.source <- NULL
+for (i in seq(1, 1000, by = 2)) {
+    bat.source <- c(bat.source, unlist(source.lexicon[[i]][[4]]))
+}
+
+bet.source <- NULL
+for (i in seq(2, 1000, by = 2)) {
+    bet.source <- c(bet.source, unlist(source.lexicon[[i]][[4]]))
+}
+
+vowels.source <- data.frame(
+    f1 = c(bat.source, bet.source),
+    vowel = c(rep("BAT", times = length(bet.source)), rep("BET", times = length(bat.source)))
+)
+
+ggplot(vowels.source, aes(f1, colour = vowel)) +
+    geom_density() +
+    xlim(2, 9)
+```
+
+
+```{r plot-final-3, eval = FALSE}
+bat <- NULL
+for (i in seq(1, 1000, by = 2)) {
+    bat <- c(bat, unlist(lexicon3[[i]][[4]]))
+}
+
+bet <- NULL
+for (i in seq(2, 1000, by = 2)) {
+    bet <- c(bet, unlist(lexicon3[[i]][[4]]))
+}
+
+bit <- NULL
+for (i in seq(2, 1000, by = 2)) {
+    bit <- c(bit, unlist(lexicon3[[i]][[4]]))
+}
+
+vowels <- data.frame(
+    f1 = c(bat, bet, bit),
+    vowel = c(rep("BAT", times = length(bat)), rep("BET", times = length(bet)), rep("BIT", times = length(bet)))
+)
+
+ggplot(vowels, aes(f1)) +
+    geom_density() +
+    xlim(2, 9) +
+    facet_grid(. ~ vowel)
+```
+
 ```{r freq-bin}
 change3 <- mutate(change3,
                  freq.bin = ifelse(frequency < max(frequency)/2,
