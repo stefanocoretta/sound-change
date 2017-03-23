@@ -1044,7 +1044,7 @@ for (iteration in 1:iterations) {
         }
     }
 
-    if (iteration %% 1000 == 0) {
+    if (iteration == 1 || iteration %% 1000 == 0) {
         now.frequency <- NULL
         f1.mean <- NULL
         for (word in 1:lexicon.size) {
