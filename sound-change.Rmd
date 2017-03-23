@@ -1228,7 +1228,7 @@ change4 <- data.frame("word" = numeric(),
 ```
 
 ```{r vowel-shift-4}
-iterations <- 100000
+iterations <- 10000
 f1.bias <- -0.5
 f2.bias <- 0.05
 
@@ -1381,7 +1381,7 @@ for (iteration in 1:iterations) {
         }
     }
 
-    if (iteration == 1 || iteration %% 1000 == 0) {
+    if (iteration %% 1000 == 0) {
         now.frequency <- NULL
         f1.mean <- NULL
         f2.mean <- NULL
@@ -1389,12 +1389,8 @@ for (iteration in 1:iterations) {
             word.frequency <- lexicon4[[word]][[2]]
             now.frequency <- c(now.frequency, word.frequency)
             word.f1.mean <- mean(unlist(lexicon4[[word]][[4]]))
-            f1.mean <- c(f1.mean, word.f1.mean)
-        }
-        for (word in 1:lexicon.size) {
-            word.frequency <- lexicon4[[word]][[2]]
-            now.frequency <- c(now.frequency, word.frequency)
             word.f2.mean <- mean(unlist(lexicon4[[word]][[5]]))
+            f1.mean <- c(f1.mean, word.f1.mean)
             f2.mean <- c(f2.mean, word.f2.mean)
         }
         vowelss <- rep_len(c("BAT", "BET"), lexicon.size)
@@ -1487,7 +1483,7 @@ ggplot(vowels4, aes(f2, f1, colour = vowel)) +
 ```
 
 ```{r freq-bin-4}
-change4 <- mutate(change4,
+change4.bin <- mutate(change4,
                  freq.bin = ifelse(frequency < max(frequency)/2,
                                    "low",
                                    "high"
@@ -1496,7 +1492,7 @@ change4 <- mutate(change4,
 ```
 
 ```{r f1-freq-plot-4}
-ggplot(change4, aes(time, f1, colour = freq.bin)) +
+ggplot(change4.bin, aes(time, f1, colour = freq.bin)) +
     facet_grid(. ~ vowel) +
     geom_smooth(se = FALSE) +
     xlab("time (iterations)") +
@@ -1505,10 +1501,11 @@ ggplot(change4, aes(time, f1, colour = freq.bin)) +
 ```
 
 ```{r f2-freq-plot-4}
-ggplot(change4, aes(time, f2, colour = freq.bin)) +
+ggplot(change4.bin, aes(time, f2, colour = freq.bin)) +
     facet_grid(. ~ vowel) +
     geom_smooth(se = FALSE) +
     xlab("time (iterations)") +
     ylab("F1 (Barks)") +
     scale_colour_discrete(name = "Frequency bin")
 ```
+
