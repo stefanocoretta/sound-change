@@ -1228,7 +1228,7 @@ change4 <- data.frame("word" = numeric(),
 ```
 
 ```{r vowel-shift-4}
-iterations <- 10000
+iterations <- 100000
 f1.bias <- -0.5
 f2.bias <- 0.05
 
