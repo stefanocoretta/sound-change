@@ -1132,7 +1132,7 @@ change3 <- mutate(change3,
 ```{r freq-plot}
 ggplot(change3, aes(time, f1, colour = freq.bin)) +
     facet_grid(. ~ vowel) +
-    geom_smooth(se = FALSE) +
+    geom_smooth(method = "lm") +
     xlab("time (iterations)") +
     ylab("F1 (Barks)") +
     scale_colour_discrete(name = "Frequency bin")
