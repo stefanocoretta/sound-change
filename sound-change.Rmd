@@ -876,7 +876,7 @@ change3 <- data.frame("word" = numeric(),
 ```
 
 ```{r vowel-shift-3}
-iterations <- 100000
+iterations <- 200000
 bias <- -0.2
 
 for (iteration in 1:iterations) {
