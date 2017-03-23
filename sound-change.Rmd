@@ -288,7 +288,7 @@ for (i in seq(2, 1000, by = 2)) {
 
 vowels.source <- data.frame(
     f1 = c(bat.source, bet.source),
-    vowel = c(rep("BAT", times = length(bet.source)), rep("BET", times = length(bat.source)))
+    vowel = c(rep("BAT", times = length(bat.source)), rep("BET", times = length(bet.source)))
 )
 
 ggplot(vowels.source, aes(f1, colour = vowel)) +
@@ -310,7 +310,7 @@ for (i in seq(2, 1000, by = 2)) {
 
 vowels <- data.frame(
     f1 = c(bat, bet),
-    vowel = c(rep("BAT", times = length(bet)), rep("BET", times = length(bat)))
+    vowel = c(rep("BAT", times = length(bat)), rep("BET", times = length(bet)))
 )
 
 ggplot(vowels, aes(f1, colour = vowel)) +
@@ -1064,18 +1064,23 @@ for (iteration in 1:iterations) {
 
 ```{r plot-source-3, eval = FALSE}
 bat.source <- NULL
-for (i in seq(1, 1000, by = 2)) {
-    bat.source <- c(bat.source, unlist(source.lexicon[[i]][[4]]))
+for (i in seq(1, 1000, by = 3)) {
+    bat.source <- c(bat.source, unlist(source.lexicon3[[i]][[4]]))
 }
 
 bet.source <- NULL
-for (i in seq(2, 1000, by = 2)) {
-    bet.source <- c(bet.source, unlist(source.lexicon[[i]][[4]]))
+for (i in seq(2, 1000, by = 3)) {
+    bet.source <- c(bet.source, unlist(source.lexicon3[[i]][[4]]))
+}
+
+bit.source <- NULL
+for (i in seq(3, 1000, by = 3)) {
+    bit.source <- c(bit.source, unlist(source.lexicon3[[i]][[4]]))
 }
 
 vowels.source <- data.frame(
-    f1 = c(bat.source, bet.source),
-    vowel = c(rep("BAT", times = length(bet.source)), rep("BET", times = length(bat.source)))
+    f1 = c(bat.source, bet.source, bit.source),
+    vowel = c(rep("BAT", times = length(bat.source)), rep("BET", times = length(bet.source)), rep("BIT", times = length(bit.source)))
 )
 
 ggplot(vowels.source, aes(f1, colour = vowel)) +
@@ -1086,29 +1091,28 @@ ggplot(vowels.source, aes(f1, colour = vowel)) +
 
 ```{r plot-final-3, eval = FALSE}
 bat <- NULL
-for (i in seq(1, 1000, by = 2)) {
+for (i in seq(1, 1000, by = 3)) {
     bat <- c(bat, unlist(lexicon3[[i]][[4]]))
 }
 
 bet <- NULL
-for (i in seq(2, 1000, by = 2)) {
+for (i in seq(2, 1000, by = 3)) {
     bet <- c(bet, unlist(lexicon3[[i]][[4]]))
 }
 
 bit <- NULL
-for (i in seq(2, 1000, by = 2)) {
+for (i in seq(3, 1000, by = 3)) {
     bit <- c(bit, unlist(lexicon3[[i]][[4]]))
 }
 
 vowels <- data.frame(
     f1 = c(bat, bet, bit),
-    vowel = c(rep("BAT", times = length(bat)), rep("BET", times = length(bet)), rep("BIT", times = length(bet)))
+    vowel = c(rep("BAT", times = length(bat)), rep("BET", times = length(bet)), rep("BIT", times = length(bit)))
 )
 
-ggplot(vowels, aes(f1)) +
+ggplot(vowels, aes(f1, colour = vowel)) +
     geom_density() +
-    xlim(2, 9) +
-    facet_grid(. ~ vowel)
+    xlim(2, 9)
 ```
 
 ```{r vowel-plot, eval = FALSE}
