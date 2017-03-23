@@ -851,7 +851,7 @@ iterations <- 50000
 bat.f1 <- 6.5
 bet.f1 <- 5.5
 bit.f1 <- 4.5
-lexicon2 <- populateLexicon3(lexicon3, iterations, frequency, bat.f1, bet.f1, bit.f1)
+lexicon3 <- populateLexicon3(lexicon3, iterations, frequency, bat.f1, bet.f1, bit.f1)
 source.lexicon3 <- lexicon3
 ```
 
