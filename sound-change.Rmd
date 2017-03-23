@@ -1137,3 +1137,378 @@ ggplot(change3, aes(time, f1, colour = freq.bin)) +
     ylab("F1 (Barks)") +
     scale_colour_discrete(name = "Frequency bin")
 ```
+
+# Simulation 4
+
+```{r createLexicon4}
+createLexicon4 <- function(size, frequency, group.size) {
+
+    word <- seq(1, size)
+    vowel <- rep(c("BAT", "BET"), size)
+    class <- sample(rep(1:(size/group.size), each = group.size))
+#    class <- c(rbind(sample(1:(size/group.size)), sample(1:(size/group.size))))
+    cloud.f1 <- list()
+    cloud.f2 <- list()
+    lexicon <- list()
+
+    for (i in 1:size) {
+        lexicon[[i]] <- list(word[i], frequency[i], vowel[i], cloud.f1, cloud.f2, class[i])
+    }
+
+    return(lexicon)
+}
+```
+
+```{r populateLexicon4}
+populateLexicon4 <- function(lexicon, iterations, probs, bat.f1, bat.f2, bet.f1, bet.f2) {
+    for (i in 1:iterations) {
+        item <- sample(seq(1, length(lexicon)), 1, prob = probs)
+        cloud.size <- length(lexicon[[item]][[4]])
+        if (cloud.size == 0) {
+            if (lexicon[[item]][[3]] == "BAT") {
+                f1 <- bat.f1
+                f2 <- bat.f2
+            } else {
+                f1 <- bet.f1
+                f2 <- bet.f2
+            }
+            lexicon[[item]][[4]][[1]] <- produceFormants(f1)
+            lexicon[[item]][[5]][[1]] <- produceFormants(f2)
+        } else if (cloud.size == 1) {
+            target <- lexicon[[item]][[4]][[1]]
+            lexicon[[item]][[4]][[cloud.size + 1]] <- produceFormants(target)
+            target <- lexicon[[item]][[5]][[1]]
+            lexicon[[item]][[5]][[cloud.size + 1]] <- produceFormants(target)
+        } else {
+            target <- sample(unlist(lexicon[[item]][[4]]), 1)
+            lexicon[[item]][[4]][[cloud.size + 1]] <- produceFormants(target)
+            target <- sample(unlist(lexicon[[item]][[5]]), 1)
+            lexicon[[item]][[5]][[cloud.size + 1]] <- produceFormants(target)
+        }
+    }
+    return(lexicon)
+}
+```
+
+```{r lexicon4}
+set.seed(4321)
+
+lexicon.size = 500
+frequency <- zipfDistr(lexicon.size)
+group.size <- 5
+lexicon4 <- createLexicon4(lexicon.size, frequency, group.size)
+
+iterations <- 50000
+bat.f1 <- 6.5
+bat.f2 <- 12.7
+bet.f1 <- 5.5
+bet.f2 <- 13
+lexicon4 <- populateLexicon4(lexicon4, iterations, frequency, bat.f1, bat.f2, bet.f1, bet.f2)
+source.lexicon4 <- lexicon4
+```
+
+```{r groups4}
+groups4 <- list()
+
+for (i in 1:(lexicon.size/group.size)) {
+    groups4[[i]] <- list(i, list())
+}
+
+for (i in 1:lexicon.size) {
+    class <- lexicon4[[i]][[6]]
+    groups4[[class]][[2]][[length(groups4[[class]][[2]]) + 1]] <- i
+}
+
+change4 <- data.frame("word" = numeric(),
+                     "time" = numeric(),
+                     "frequency" = numeric(),
+                     "f1" = numeric(),
+                     "vowel" = character()
+                     )
+```
+
+```{r vowel-shift-4}
+iterations <- 100000
+f1.bias <- -0.5
+f2.bias <- 0.05
+
+for (iteration in 1:iterations) {
+    word <- sample(1:lexicon.size, 1, prob = frequency)
+
+    #### Produce the chosen word ####
+
+    if (lexicon4[[word]][[3]] == "BAT") {
+
+        #### The chosen word is a BAT word ####
+
+        if (length(lexicon4[[word]][[4]]) == 0) {
+            lexicon4[[word]][[4]] <- list(produceFormants(bat.f1, f1.bias))
+            lexicon4[[word]][[5]] <- list(produceFormants(bat.f2, f2.bias))
+        } else {
+            target <- sample(1:length(lexicon4[[word]][[4]]), 1)
+            outcome.f1 <- produceFormants(lexicon4[[word]][[4]][[target]], f1.bias)
+            # if (outcome.f1 < 4) {
+            #     outcome.f1 <- 4
+            # } else if (outcome.f1 > 6.5) {
+            #     outcome.f1 <- 6.5
+            # }
+            lexicon4[[word]][[4]][[length(lexicon4[[word]][[4]]) + 1]] <- outcome.f1
+            target <- sample(1:length(lexicon4[[word]][[5]]), 1)
+            outcome.f2 <- produceFormants(lexicon4[[word]][[5]][[target]], f2.bias)
+            # if (outcome.f2 < 12) {
+            #     outcome.f2 <- 12
+            # } else if (outcome.f2 > 14) {
+            #     outcome.f2 <- 14
+            # }
+            lexicon4[[word]][[5]][[length(lexicon4[[word]][[5]]) + 1]] <- outcome.f2
+        }
+
+        #### Categorisation process ####
+
+        class <- lexicon4[[word]][[6]][[1]]
+        pool.f1 <- NULL
+        pool.f2 <- NULL
+        for (i in 1:group.size){
+            other.word <- groups4[[class]][[2]][[i]]
+            if (lexicon4[[other.word]][[3]] != "BAT") {
+                pool.f1 <- c(pool.f1, unlist(lexicon4[[other.word]][[4]]))
+                pool.f2 <- c(pool.f2, unlist(lexicon4[[other.word]][[5]]))
+            }
+        }
+        if (length(pool.f1) > 0 & length(pool.f2) > 0) {# some words don't have exemplars
+            if ((outcome.f1 >= min(pool.f1) & outcome.f1 <= max(pool.f1)) & (outcome.f2 >= min(pool.f2) & outcome.f2 <= max(pool.f2))) {
+                encoding.prob <- lexicon4[[word]][[2]] /
+                                max(frequency)
+                encode <- sample(c("yes", "no"),
+                                 1,
+                                 prob = c(encoding.prob,
+                                          1 - encoding.prob
+                                 )
+                )
+
+                #### Encoding function ####
+                if (encode == "no") {
+                    for (i in 1:group.size) {
+                        other.word <- groups4[[class]][[2]][[i]]
+                        if (length(lexicon4[[other.word]][[4]]) != 0) {
+                            for (j in length(lexicon4[[other.word]][[4]]):1) {
+                                if (lexicon4[[other.word]][[4]][[j]] == outcome.f1 &
+                                    lexicon4[[other.word]][[5]][[j]] == outcome.f2) {
+                                    if (length(lexicon4[[other.word]][[4]]) == 1) {
+                                        lexicon4[[other.word]][[4]] <- list()
+                                        lexicon4[[other.word]][[5]] <- list()
+                                    } else {
+                                        lexicon4[[other.word]][[4]][[j]] <- NULL
+                                        lexicon4[[other.word]][[5]][[j]] <- NULL
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    } else {
+
+        #### The chosen word is a BET word ####
+
+        if (length(lexicon4[[word]][[4]]) == 0) {
+            lexicon4[[word]][[4]] <- list(produceFormants(bet.f1))
+            lexicon4[[word]][[5]] <- list(produceFormants(bet.f2))
+        } else {
+            target <- sample(1:length(lexicon4[[word]][[4]]), 1)
+            outcome.f1 <- produceFormants(lexicon4[[word]][[4]][[target]])
+            # if (outcome.f1 < 4) {
+            #     outcome.f1 <- 4
+            # } else if (outcome.f1 > 6.5) {
+            #     outcome.f1 <- 6.5
+            # }
+            lexicon4[[word]][[4]][[length(lexicon4[[word]][[4]]) + 1]] <- outcome.f1
+            target <- sample(1:length(lexicon4[[word]][[5]]), 1)
+            outcome.f2 <- produceFormants(lexicon4[[word]][[5]][[target]])
+            # if (outcome.f2 < 12) {
+            #     outcome.f2 <- 12
+            # } else if (outcome.f2 > 14) {
+            #     outcome.f2 <- 14
+            # }
+            lexicon4[[word]][[5]][[length(lexicon4[[word]][[5]]) + 1]] <- outcome.f2
+        }
+
+        #### Categorisation process ####
+
+        class <- lexicon4[[word]][[6]][[1]]
+        pool.f1 <- NULL
+        pool.f2 <- NULL
+        for (i in 1:group.size){
+            other.word <- groups4[[class]][[2]][[i]]
+            if (lexicon4[[other.word]][[3]] != "BET") {
+                pool.f1 <- c(pool.f1, unlist(lexicon4[[other.word]][[4]]))
+                pool.f2 <- c(pool.f2, unlist(lexicon4[[other.word]][[5]]))
+            }
+        }
+        if (length(pool.f1) > 0 & length(pool.f2) > 0) {# some words don't have exemplars
+            if ((outcome.f1 >= min(pool.f1) & outcome.f1 <= max(pool.f1)) & (outcome.f2 >= min(pool.f2) & outcome.f2 <= max(pool.f2))) {
+                encoding.prob <- lexicon4[[word]][[2]] /
+                                max(frequency)
+                encode <- sample(c("yes", "no"),
+                                 1,
+                                 prob = c(encoding.prob,
+                                          1 - encoding.prob
+                                 )
+                )
+
+                #### Encoding function ####
+                if (encode == "no") {
+                    for (i in 1:group.size) {
+                        other.word <- groups4[[class]][[2]][[i]]
+                        if (length(lexicon4[[other.word]][[4]]) != 0) {
+                            for (j in length(lexicon4[[other.word]][[4]]):1) {
+                                if (lexicon4[[other.word]][[4]][[j]] == outcome.f1 &
+                                    lexicon4[[other.word]][[5]][[j]] == outcome.f2) {
+                                    if (length(lexicon4[[other.word]][[4]]) == 1) {
+                                        lexicon4[[other.word]][[4]] <- list()
+                                        lexicon4[[other.word]][[5]] <- list()
+                                    } else {
+                                        lexicon4[[other.word]][[4]][[j]] <- NULL
+                                        lexicon4[[other.word]][[5]][[j]] <- NULL
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    if (iteration == 1 || iteration %% 1000 == 0) {
+        now.frequency <- NULL
+        f1.mean <- NULL
+        f2.mean <- NULL
+        for (word in 1:lexicon.size) {
+            word.frequency <- lexicon4[[word]][[2]]
+            now.frequency <- c(now.frequency, word.frequency)
+            word.f1.mean <- mean(unlist(lexicon4[[word]][[4]]))
+            f1.mean <- c(f1.mean, word.f1.mean)
+        }
+        for (word in 1:lexicon.size) {
+            word.frequency <- lexicon4[[word]][[2]]
+            now.frequency <- c(now.frequency, word.frequency)
+            word.f2.mean <- mean(unlist(lexicon4[[word]][[5]]))
+            f2.mean <- c(f2.mean, word.f2.mean)
+        }
+        vowelss <- rep_len(c("BAT", "BET"), lexicon.size)
+        words <- seq(1, lexicon.size)
+        time <- rep(iteration, lexicon.size)
+        change.current <- data.frame("word" = words, time, "frequency" = now.frequency, "f1" = f1.mean, "f2" = f2.mean, "vowel" = vowelss)
+        change4 <- rbind(change4, change.current)
+    }
+}
+```
+
+```{r plot-source-4, eval = FALSE}
+bat.f1.source <- NULL
+for (i in seq(1, lexicon.size, by = 2)) {
+    bat.f1.source <- c(bat.f1.source, unlist(source.lexicon4[[i]][[4]]))
+}
+bat.f2.source <- NULL
+for (i in seq(1, lexicon.size, by = 2)) {
+    bat.f2.source <- c(bat.f2.source, unlist(source.lexicon4[[i]][[5]]))
+}
+
+bet.f1.source <- NULL
+for (i in seq(2, lexicon.size, by = 2)) {
+    bet.f1.source <- c(bet.f1.source, unlist(source.lexicon4[[i]][[4]]))
+}
+bet.f2.source <- NULL
+for (i in seq(2, lexicon.size, by = 2)) {
+    bet.f2.source <- c(bet.f2.source, unlist(source.lexicon4[[i]][[5]]))
+}
+
+vowels.source4 <- data.frame(
+    f1 = c(bat.f1.source, bet.f1.source),
+    f2 = c(bat.f2.source, bet.f2.source),
+    vowel = c(rep("BAT", times = length(bat.f1.source)), rep("BET", times = length(bet.f1.source)))
+)
+
+ggplot(vowels.source4, aes(f1, colour = vowel)) +
+    geom_density()
+
+ggplot(vowels.source4, aes(f2, colour = vowel)) +
+    geom_density()
+```
+
+```{r plot-source-vowels-4}
+ggplot(vowels.source4, aes(f2, f1, colour = vowel)) +
+    geom_point(alpha = 0.5) +
+    scale_x_reverse(position = "top") +
+    scale_y_reverse(position = "right") +
+    stat_ellipse()
+```
+
+```{r plot-final-4, eval = FALSE}
+bat.f1 <- NULL
+for (i in seq(1, lexicon.size, by = 2)) {
+    bat.f1 <- c(bat.f1, unlist(lexicon4[[i]][[4]]))
+}
+bat.f2 <- NULL
+for (i in seq(1, lexicon.size, by = 2)) {
+    bat.f2 <- c(bat.f2, unlist(lexicon4[[i]][[5]]))
+}
+
+bet.f1 <- NULL
+for (i in seq(2, lexicon.size, by = 2)) {
+    bet.f1 <- c(bet.f1, unlist(lexicon4[[i]][[4]]))
+}
+bet.f2 <- NULL
+for (i in seq(2, lexicon.size, by = 2)) {
+    bet.f2 <- c(bet.f2, unlist(lexicon4[[i]][[5]]))
+}
+
+vowels4 <- data.frame(
+    f1 = c(bat.f1, bet.f1),
+    f2 = c(bat.f2, bet.f2),
+    vowel = c(rep("BAT", times = length(bat.f1)), rep("BET", times = length(bet.f1)))
+)
+
+ggplot(vowels4, aes(f1, colour = vowel)) +
+    geom_density()
+
+ggplot(vowels4, aes(f2, colour = vowel)) +
+    geom_density()
+```
+
+```{r plot-source-vowels-4}
+ggplot(vowels4, aes(f2, f1, colour = vowel)) +
+    geom_point(alpha = 0.5) +
+    scale_x_reverse(position = "top") +
+    scale_y_reverse(position = "right") +
+    stat_ellipse()
+```
+
+```{r freq-bin-4}
+change4 <- mutate(change4,
+                 freq.bin = ifelse(frequency < max(frequency)/2,
+                                   "low",
+                                   "high"
+                                   )
+                 )
+```
+
+```{r f1-freq-plot-4}
+ggplot(change4, aes(time, f1, colour = freq.bin)) +
+    facet_grid(. ~ vowel) +
+    geom_smooth(se = FALSE) +
+    xlab("time (iterations)") +
+    ylab("F1 (Barks)") +
+    scale_colour_discrete(name = "Frequency bin")
+```
+
+```{r f2-freq-plot-4}
+ggplot(change4, aes(time, f2, colour = freq.bin)) +
+    facet_grid(. ~ vowel) +
+    geom_smooth(se = FALSE) +
+    xlab("time (iterations)") +
+    ylab("F1 (Barks)") +
+    scale_colour_discrete(name = "Frequency bin")
+```
