@@ -1476,7 +1476,7 @@ ggplot(vowels4, aes(f2, colour = vowel)) +
     geom_density()
 ```
 
-```{r plot-source-vowels-4}
+```{r plot-final-vowels-4}
 ggplot(vowels4, aes(f2, f1, colour = vowel)) +
     geom_point(alpha = 0.5) +
     scale_x_reverse(position = "top") +
