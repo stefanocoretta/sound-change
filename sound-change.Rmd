@@ -487,7 +487,7 @@ for (iteration in 1:iterations) {
                 pool.f2 <- c(pool.f2, unlist(lexicon2[[other.word]][[5]]))
             }
         }
-        if (length(pool) > 0) {# some words don't have exemplars
+        if (length(pool.f1) > 0 & length(pool.f2) > 0) {# some words don't have exemplars
             if ((outcome.f1 >= min(pool.f1) & outcome.f1 <= max(pool.f1)) & (outcome.f2 >= min(pool.f2) & outcome.f2 <= max(pool.f2))) {
                 encoding.prob <- lexicon2[[word]][[2]] /
                                 max(frequency)
@@ -558,7 +558,7 @@ for (iteration in 1:iterations) {
                 pool.f2 <- c(pool.f2, unlist(lexicon2[[other.word]][[5]]))
             }
         }
-        if (length(pool) > 0) {# some words don't have exemplars
+        if (length(pool.f1) > 0 & length(pool.f2) > 0) {# some words don't have exemplars
             if ((outcome.f1 >= min(pool.f1) & outcome.f1 <= max(pool.f1)) & (outcome.f2 >= min(pool.f2) & outcome.f2 <= max(pool.f2))) {
                 encoding.prob <- lexicon2[[word]][[2]] /
                                 max(frequency)
@@ -628,7 +628,7 @@ for (iteration in 1:iterations) {
                 pool.f2 <- c(pool.f2, unlist(lexicon2[[other.word]][[5]]))
             }
         }
-        if (length(pool) > 0) {# some words don't have exemplars
+        if (length(pool.f1) > 0 & length(pool.f2) > 0) {# some words don't have exemplars
             if ((outcome.f1 >= min(pool.f1) & outcome.f1 <= max(pool.f1)) & (outcome.f2 >= min(pool.f2) & outcome.f2 <= max(pool.f2))) {
                 encoding.prob <- lexicon2[[word]][[2]] /
                                 max(frequency)
@@ -774,7 +774,7 @@ ggplot(vowels.final2, aes(f2, colour = vowel)) +
 ```
 
 ```{r freq-bin-2}
-change2 <- mutate(change2,
+change2.bin <- mutate(change2,
                  freq.bin = ifelse(frequency < max(frequency)/2,
                                    "low",
                                    "high"
@@ -783,7 +783,7 @@ change2 <- mutate(change2,
 ```
 
 ```{r freq-plot2}
-ggplot(change2, aes(time, f1, colour = freq.bin)) +
+ggplot(change2.bin, aes(time, f1, colour = freq.bin)) +
     facet_grid(. ~ vowel) +
     geom_smooth(se = FALSE) +
     xlab("time (iterations)") +
