@@ -1125,7 +1125,7 @@ ggplot(change3, aes(time, f1, colour = vowel)) +
 ```
 
 ```{r freq-bin}
-change3 <- mutate(change3,
+change3.bin <- mutate(change3,
                  freq.bin = ifelse(frequency < max(frequency)/2,
                                    "low",
                                    "high"
@@ -1134,7 +1134,7 @@ change3 <- mutate(change3,
 ```
 
 ```{r freq-plot}
-ggplot(change3, aes(time, f1, colour = freq.bin)) +
+ggplot(change3.bin, aes(time, f1, colour = freq.bin)) +
     facet_grid(. ~ vowel) +
     geom_smooth(method = "lm") +
     xlab("time (iterations)") +
