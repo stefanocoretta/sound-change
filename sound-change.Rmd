@@ -21,6 +21,29 @@ theme_set(theme_bw())
 library(dplyr)
 ```
 
+# General functions
+
+The frequency distribution is produced by the following function, `zipfDistr()`. The distribution is a random sample from a Zipfian distribution (it uses the `zipfR` package).
+
+```{r zipfDistr}
+zipfDistr <- function(size) {
+    zipf.model <- lnre("zm", alpha = 2/7, B = 0.1)
+    zipf.sample <- rlnre(zipf.model, n = size)
+    zipf.distr <- sort(as.numeric(as.character(zipf.sample)))
+    return(zipf.distr)
+}
+```
+
+We then need a function for generating values for the BAT and BET vowels in the lexicon. Since the main change affected the second formant (F1), the function will return F1 values (in Barks). The function takes a `target` value, it applies random noise and a `bias` (if specified; the default is `0`). A noise window of 0.5 (between -0.25 and 0.25) is used for the application of the production noise.
+
+```{r produceFormants}
+produceFormants <- function(target, bias = 0) {
+    noise <- sample(seq(-0.2, 0.2, by = 0.1), 1)
+    outcome <- target + noise + bias
+    return(outcome)
+}
+```
+
 # Simulation 1
 
 The first simulation models the effects of an enrouching category affected by a bias on the category towards which the former is moving. In our case, the encrouching category is the the BAT vowel, while the other category is the BET vowel.
@@ -45,27 +68,6 @@ createLexicon <- function(size, frequency, group.size) {
     }
 
     return(lexicon)
-}
-```
-
-The frequency distribution is produced by the following function, `zipfDistr()`. The distribution is a random sample from a Zipfian distribution (it uses the `zipfR` package).
-
-```{r zipfDistr}
-zipfDistr <- function(size) {
-    zipf.model <- lnre("zm", alpha = 2/7, B = 0.1)
-    zipf.sample <- rlnre(zipf.model, n = size)
-    zipf.distr <- sort(as.numeric(as.character(zipf.sample)))
-    return(zipf.distr)
-}
-```
-
-We then need a function for generating values for the BAT and BET vowels in the lexicon. Since the main change affected the second formant (F1), the function will return F1 values (in Barks). The function takes a `target` value, it applies random noise and a `bias` (if specified; the default is `0`). A noise window of 0.5 (between -0.25 and 0.25) is used for the application of the production noise.
-
-```{r produceFormants}
-produceFormants <- function(target, bias = 0) {
-    noise <- sample(seq(-0.2, 0.2, by = 0.1), 1)
-    outcome <- target + noise + bias
-    return(outcome)
 }
 ```
 
