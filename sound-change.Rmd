@@ -859,9 +859,7 @@ bet.f1 <- 5.5
 bit.f1 <- 4.5
 lexicon3 <- populateLexicon3(lexicon3, iterations, frequency, bat.f1, bet.f1, bit.f1)
 source.lexicon3 <- lexicon3
-```
 
-```{r groups3}
 groups3 <- list()
 
 for (i in 1:(lexicon.size/group.size)) {
