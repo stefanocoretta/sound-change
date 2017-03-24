@@ -799,6 +799,8 @@ ggplot(change2.bin, aes(time, f1, colour = freq.bin)) +
 
 This simulation is an extention of Simulation 1, which had only two vowel categories. In this simulation I will try to add a third vowel category.
 
+This Simulation shows that high frequency words lead the change in the encroaching category (BAT), while low frequency words do in the encroached on categories (BET, BIT).
+
 ```{r createLexicon3}
 createLexicon3 <- function(size, frequency, group.size) {
 
@@ -1143,6 +1145,8 @@ ggplot(change3.bin, aes(time, f1, colour = freq.bin)) +
 ```
 
 # Simulation 4
+
+This simulation is like Simulation 1, but there is also F2. The outcome is the same as for Simulation 1.
 
 ```{r createLexicon4}
 createLexicon4 <- function(size, frequency, group.size) {
