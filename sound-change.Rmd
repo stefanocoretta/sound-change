@@ -1484,6 +1484,8 @@ ggplot(vowels4, aes(f2, f1, colour = vowel)) +
     stat_ellipse()
 ```
 
+## Plot of change by frequency bin
+
 ```{r freq-bin-4}
 change4.bin <- mutate(change4,
                  freq.bin = ifelse(frequency < max(frequency)/2,
@@ -1499,7 +1501,8 @@ ggplot(change4.bin, aes(time, f1, colour = freq.bin)) +
     geom_smooth(se = FALSE) +
     xlab("time (iterations)") +
     ylab("F1 (Barks)") +
-    scale_colour_discrete(name = "Frequency bin")
+    scale_colour_discrete(name = "Frequency bin") +
+    labs(title = "Change of mean F1 through time in high and low frequency words")
 ```
 
 ```{r f2-freq-plot-4}
@@ -1508,6 +1511,7 @@ ggplot(change4.bin, aes(time, f2, colour = freq.bin)) +
     geom_smooth(se = FALSE) +
     xlab("time (iterations)") +
     ylab("F2 (Barks)") +
-    scale_colour_discrete(name = "Frequency bin")
+    scale_colour_discrete(name = "Frequency bin") +
+    labs(title = "Change of mean F1 through time in high and low frequency words")
 ```
 
