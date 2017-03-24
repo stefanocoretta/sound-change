@@ -390,15 +390,15 @@ populateLexicon2 <- function(lexicon, iterations, probs, bat.f1, bat.f2, bet.f1,
             lexicon[[item]][[4]][[1]] <- produceFormants(f1)
             lexicon[[item]][[5]][[1]] <- produceFormants(f2)
         } else if (cloud.size == 1) {
-            target <- lexicon[[item]][[4]][[1]]
-            lexicon[[item]][[4]][[cloud.size + 1]] <- produceFormants(target)
-            target <- lexicon[[item]][[5]][[1]]
-            lexicon[[item]][[5]][[cloud.size + 1]] <- produceFormants(target)
+            target.f1 <- lexicon[[item]][[4]][[1]]
+            lexicon[[item]][[4]][[cloud.size + 1]] <- produceFormants(target.f1)
+            target.f2 <- lexicon[[item]][[5]][[1]]
+            lexicon[[item]][[5]][[cloud.size + 1]] <- produceFormants(target.f2)
         } else {
-            target <- sample(unlist(lexicon[[item]][[4]]), 1)
-            lexicon[[item]][[4]][[cloud.size + 1]] <- produceFormants(target)
-            target <- sample(unlist(lexicon[[item]][[5]]), 1)
-            lexicon[[item]][[5]][[cloud.size + 1]] <- produceFormants(target)
+            target.f1 <- sample(unlist(lexicon[[item]][[4]]), 1)
+            lexicon[[item]][[4]][[cloud.size + 1]] <- produceFormants(target.f1)
+            target.f2 <- sample(unlist(lexicon[[item]][[5]]), 1)
+            lexicon[[item]][[5]][[cloud.size + 1]] <- produceFormants(target.f2)
         }
     }
     return(lexicon)
@@ -422,9 +422,7 @@ bit.f1 <- 4
 bit.f2 <- 13.3
 lexicon2 <- populateLexicon2(lexicon2, iterations, frequency, bat.f1, bat.f2, bet.f1, bet.f2, bit.f1, bit.f2)
 source.lexicon2 <- lexicon2
-```
 
-```{r groups2}
 groups2 <- list()
 
 for (i in 1:(lexicon.size/group.size)) {
@@ -445,8 +443,8 @@ change2 <- data.frame("word" = numeric(),
 ```
 
 ```{r vowel-shift2}
-iterations <- 20000
-f1.bias <- -0.5
+iterations <- 200000
+f1.bias <- -0.35
 f2.bias <- 0.05
 
 for (iteration in 1:iterations) {
@@ -487,13 +485,13 @@ for (iteration in 1:iterations) {
         pool.f2 <- NULL
         for (i in 1:group.size){
             other.word <- groups2[[class]][[2]][[i]]
-            if (lexicon2[[other.word]][[3]] != "BAT") {
+            if (lexicon2[[other.word]][[3]] == "BET") {
                 pool.f1 <- c(pool.f1, unlist(lexicon2[[other.word]][[4]]))
                 pool.f2 <- c(pool.f2, unlist(lexicon2[[other.word]][[5]]))
             }
         }
         if (length(pool.f1) > 0 & length(pool.f2) > 0) {# some words don't have exemplars
-            if ((outcome.f1 >= min(pool.f1) & outcome.f1 <= max(pool.f1)) & (outcome.f2 >= min(pool.f2) & outcome.f2 <= max(pool.f2))) {
+            if (outcome.f1 <= max(pool.f1) & outcome.f2 >= min(pool.f2)) {
                 encoding.prob <- lexicon2[[word]][[2]] /
                                 max(frequency)
                 encode <- sample(c("yes", "no"),
@@ -554,17 +552,22 @@ for (iteration in 1:iterations) {
         #### Categorisation process ####
 
         class <- lexicon2[[word]][[6]][[1]]
-        pool.f1 <- NULL
-        pool.f2 <- NULL
+        pool.a.f1 <- NULL
+        pool.a.f2 <- NULL
+        pool.i.f1 <- NULL
+        pool.i.f2 <- NULL
         for (i in 1:group.size){
             other.word <- groups2[[class]][[2]][[i]]
-            if (lexicon2[[other.word]][[3]] != "BET") {
-                pool.f1 <- c(pool.f1, unlist(lexicon2[[other.word]][[4]]))
-                pool.f2 <- c(pool.f2, unlist(lexicon2[[other.word]][[5]]))
+            if (lexicon2[[other.word]][[3]] == "BAT") {
+                pool.a.f1 <- c(pool.a.f1, unlist(lexicon2[[other.word]][[4]]))
+                pool.a.f2 <- c(pool.a.f2, unlist(lexicon2[[other.word]][[5]]))
+            } else if (lexicon2[[other.word]][[3]] == "BIT") {
+                pool.i.f1 <- c(pool.i.f1, unlist(lexicon2[[other.word]][[4]]))
+                pool.i.f2 <- c(pool.i.f2, unlist(lexicon2[[other.word]][[5]]))
             }
         }
         if (length(pool.f1) > 0 & length(pool.f2) > 0) {# some words don't have exemplars
-            if ((outcome.f1 >= min(pool.f1) & outcome.f1 <= max(pool.f1)) & (outcome.f2 >= min(pool.f2) & outcome.f2 <= max(pool.f2))) {
+            if ((outcome.f1 >= min(pool.a.f1) | outcome.f1 <= max(pool.i.f1)) & (outcome.f2 >= min(pool.a.f2) | outcome.f2 <= max(pool.i.f2))) {
                 encoding.prob <- lexicon2[[word]][[2]] /
                                 max(frequency)
                 encode <- sample(c("yes", "no"),
