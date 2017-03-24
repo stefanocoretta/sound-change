@@ -674,16 +674,19 @@ for (iteration in 1:iterations) {
     if (iteration %% 1000 == 0) {
         now.frequency <- NULL
         f1.mean <- NULL
+        f2.mean <- NULL
         for (word in 1:lexicon.size) {
             word.frequency <- lexicon2[[word]][[2]]
             now.frequency <- c(now.frequency, word.frequency)
             word.f1.mean <- mean(unlist(lexicon2[[word]][[4]]))
             f1.mean <- c(f1.mean, word.f1.mean)
+            word.f2.mean <- mean(unlist(lexicon2[[word]][[5]]))
+            f2.mean <- c(f2.mean, word.f2.mean)
         }
         vowelss <- rep_len(c("BAT", "BET", "BIT"), lexicon.size)
         words <- seq(1, lexicon.size)
         time <- rep(iteration, lexicon.size)
-        change.current <- data.frame("word" = words, time, "frequency" = now.frequency, "f1" = f1.mean, "vowel" = vowelss)
+        change.current <- data.frame("word" = words, time, "frequency" = now.frequency, "f1" = f1.mean, "f2" = f2.mean, "vowel" = vowelss)
         change2 <- rbind(change2, change.current)
     }
 }
