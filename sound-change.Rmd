@@ -1207,9 +1207,7 @@ bet.f1 <- 5.5
 bet.f2 <- 13
 lexicon4 <- populateLexicon4(lexicon4, iterations, frequency, bat.f1, bat.f2, bet.f1, bet.f2)
 source.lexicon4 <- lexicon4
-```
 
-```{r groups4}
 groups4 <- list()
 
 for (i in 1:(lexicon.size/group.size)) {
@@ -1403,6 +1401,8 @@ for (iteration in 1:iterations) {
     }
 }
 ```
+
+## Plotting
 
 ```{r plot-source-4, eval = FALSE}
 bat.f1.source <- NULL
