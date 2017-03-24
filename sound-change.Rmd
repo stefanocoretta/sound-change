@@ -48,6 +48,8 @@ produceFormants <- function(target, bias = 0) {
 
 The first simulation models the effects of an enrouching category affected by a bias on the category towards which the former is moving. In our case, the encrouching category is the the BAT vowel, while the other category is the BET vowel.
 
+## Functions
+
 The following chunks define some functions that will be used to initialise a lexicon of words containing either a BAT or a BET vowel.
 
 The function `createLexicon()` generates and empty lexicon of specified `size` and it assings the specified `frequency` distribution to the words.
@@ -104,6 +106,8 @@ populateLexicon <- function(lexicon, iterations, probs, bat.f1, bet.f1) {
 }
 ```
 
+## Simulate shift
+
 We can now populate a lexicon with exemplars for BAT and BET vowels.
 
 ```{r lexicon}
@@ -119,9 +123,7 @@ bat.f1 <- 6.5
 bet.f1 <- 5.5
 lexicon <- populateLexicon(lexicon, iterations, frequency, bat.f1, bet.f1)
 source.lexicon <- lexicon
-```
 
-```{r groups}
 groups <- list()
 
 for (i in 1:(lexicon.size/group.size)) {
@@ -276,6 +278,7 @@ for (iteration in 1:iterations) {
 }
 ```
 
+## Plotting
 
 ```{r plot-source, eval = FALSE}
 bat.source <- NULL
@@ -326,7 +329,7 @@ ggplot(change, aes(time, f1, colour = vowel)) +
 ```
 
 ```{r freq-bin}
-change <- mutate(change,
+change.bin <- mutate(change,
                  freq.bin = ifelse(frequency < max(frequency)/2,
                                    "low",
                                    "high"
@@ -335,7 +338,7 @@ change <- mutate(change,
 ```
 
 ```{r freq-plot}
-ggplot(change, aes(time, f1, colour = freq.bin)) +
+ggplot(change.bin, aes(time, f1, colour = freq.bin)) +
     facet_grid(. ~ vowel) +
     geom_smooth(se = FALSE) +
     xlab("time (iterations)") +
