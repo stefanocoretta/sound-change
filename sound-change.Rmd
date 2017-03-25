@@ -788,19 +788,28 @@ ggplot(vowels.final2, aes(f2, colour = vowel)) +
 
 ```{r freq-bin-2}
 change2.bin <- mutate(change2,
-                 freq.bin = ifelse(frequency < max(frequency)/2,
+                 freq.bin = ifelse(frequency < max(frequency)/4,
                                    "low",
                                    "high"
                                    )
                  )
 ```
 
-```{r freq-plot2}
+```{r f1-freq-plot-2}
 ggplot(change2.bin, aes(time, f1, colour = freq.bin)) +
     facet_grid(. ~ vowel) +
     geom_smooth(se = FALSE) +
     xlab("time (iterations)") +
     ylab("F1 (Barks)") +
+    scale_colour_discrete(name = "Frequency bin")
+```
+
+```{r f2-freq-plot-2}
+ggplot(change2.bin, aes(time, f2, colour = freq.bin)) +
+    facet_grid(. ~ vowel) +
+    geom_smooth(se = FALSE) +
+    xlab("time (iterations)") +
+    ylab("F2 (Barks)") +
     scale_colour_discrete(name = "Frequency bin")
 ```
 
