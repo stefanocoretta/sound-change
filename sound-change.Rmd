@@ -19,6 +19,9 @@ library(zipfR)
 library(ggplot2)
 theme_set(theme_bw())
 library(dplyr)
+library(lme4)
+library(afex)
+library(effects)
 ```
 
 # General functions
@@ -349,8 +352,6 @@ ggplot(change.bin, aes(time, f1, colour = freq.bin)) +
 There's seems to be an interaction between the noise proportion and the bias proportion. It seems that the noise proportion needs to be big enough, but the bias proportion should be bigger than the bigger noise proportion possible.
 
 # Simulation 2
-
-In the current state, this simulation does not push the categories.
 
 ```{r createLexicon2}
 createLexicon2 <- function(size, frequency, group.size) {
@@ -1539,3 +1540,81 @@ ggplot(change4.bin, aes(time, f2, colour = freq.bin)) +
     labs(title = "Change of mean F1 through time in high and low frequency words")
 ```
 
+# Analysis
+
+## Simulation 1
+
+BAT and BET words, F1 only.
+
+```{r}
+simulation1.lm <- lmer(
+    f1 ~
+        time *
+        frequency *
+        vowel +
+        (1|word),
+    data = change
+)
+
+summary(simulation1.lm)
+```
+
+## Simulation 2
+
+BAT, BET and BIT words, F1 and F2
+
+```{r}
+simulation2.lm <- lmer(
+    f1 ~
+        time *
+        frequency *
+        vowel +
+        (1|word),
+    data = change2,
+    REML = FALSE
+)
+
+summary(simulation2.lm)
+
+simulation2.lm.null <- lmer(
+    f1 ~
+        time +
+        frequency *
+        vowel +
+        (1|word),
+    data = change2,
+    REML = FALSE
+)
+
+anova(simulation2.lm.null, simulation2.lm)
+```
+
+## Simulation 3
+
+BAT, BET and BIT words, F1 only.
+
+```{r}
+simulation2.lm <- lmer(
+    f1 ~
+        time *
+        frequency *
+        vowel +
+        (1|word),
+    data = change3,
+    REML = FALSE
+)
+
+summary(simulation2.lm)
+
+simulation2.lm.null <- lmer(
+    f1 ~
+        time +
+        frequency *
+        vowel +
+        (1|word),
+    data = change3,
+    REML = FALSE
+)
+
+anova(simulation2.lm.null, simulation2.lm)
+```
