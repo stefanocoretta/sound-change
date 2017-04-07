@@ -146,7 +146,7 @@ change <- data.frame("word" = numeric(),
 Now we can implement the vowel shift.
 
 ```{r vowel-shift}
-iterations <- 100000
+iterations <- 200000
 bias <- -0.3
 
 for (iteration in 1:iterations) {
