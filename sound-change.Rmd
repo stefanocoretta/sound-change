@@ -22,6 +22,8 @@ library(dplyr)
 library(lme4)
 library(afex)
 library(effects)
+library(mgcv)
+library(itsadug)
 ```
 
 # General functions
@@ -1594,7 +1596,7 @@ anova(simulation2.lm.null, simulation2.lm)
 BAT, BET and BIT words, F1 only.
 
 ```{r}
-simulation2.lm <- lmer(
+simulation3.lm <- lmer(
     f1 ~
         time *
         frequency *
@@ -1604,9 +1606,9 @@ simulation2.lm <- lmer(
     REML = FALSE
 )
 
-summary(simulation2.lm)
+summary(simulation3.lm)
 
-simulation2.lm.null <- lmer(
+simulation3.lm.null <- lmer(
     f1 ~
         time +
         frequency *
@@ -1616,5 +1618,84 @@ simulation2.lm.null <- lmer(
     REML = FALSE
 )
 
-anova(simulation2.lm.null, simulation2.lm)
+anova(simulation3.lm.null, simulation3.lm)
+```
+
+### GAM
+
+```{r change3}
+change3$word.ord <- as.ordered(change3$word)
+change3$vowel.ord <- as.ordered(change3$vowel)
+contrasts(change3$vowel.ord) <- "contr.treatment"
+contrasts(change3$vowel.ord) <- "contr.treatment"
+change3 <- change3 %>%
+    na.omit() %>%
+    arrange(word, time) %>%
+    start_event(column = "time", event = c("word"))
+```
+
+
+```{r simulation3-gamm}
+simulation3.gam <- bam(
+    f1 ~
+        frequency +
+        vowel.ord +
+        s(time, bs = "cr") +
+        s(time, by = frequency, bs = "cr") +
+        ti(time, frequency, by = vowel.ord) +
+        s(time, by = vowel.ord, bs = "cr") +
+        s(time, word.ord, bs = "fs", m = 1, k = 5),
+    data = change3,
+    method = "fREML"
+)
+
+summary(simulation3.gam)
+
+simulation3.gam.null <- bam(
+    f1 ~
+#        frequency +
+        vowel.ord +
+        s(time, bs = "cr") +
+#        s(time, by = frequency, bs = "cr") +
+#        ti(time, frequency, by = vowel) +
+        s(time, by = vowel.ord, bs = "cr"),
+    data = change3,
+    method = "ML"
+)
+
+compareML(simulation3.gam.null, simulation3.gam)
+```
+
+```{r simulation3-gam-plot}
+fvisgam(simulation3.gam, view = c("time","frequency"),
+        ylim = quantile(change3$frequency, c(0, 1))
+        )
+```
+
+```{r simulation3-gam-acr}
+acf_plot(resid(simulation3.gam), split_by=list(change3$word.ord))
+```
+
+```{r simulation3-gam-ar}
+r1 <- start_value_rho(simulation3.gam)
+
+simulation3.gam.ar <- bam(
+    f1 ~
+        frequency +
+        vowel.ord +
+        s(time, bs = "cr") +
+        s(time, by = frequency, bs = "cr") +
+        ti(time, frequency, by = vowel.ord) +
+        s(time, by = vowel.ord, bs = "cr"),
+    data = change3,
+    method = "fREML",
+    rho = r1,
+    AR.start = change3$start.event
+)
+
+summary(simulation3.gam.ar)
+```
+
+```{r simulation3-gam-ar-acr}
+acf_plot(resid(simulation3.gam.ar), split_by=list(change3$word.ord))
 ```
