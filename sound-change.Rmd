@@ -1869,13 +1869,15 @@ ggplot(aes(time, f1, colour = freq.bin)) +
 BAT and BET words, F1 only.
 
 ```{r}
+change.scaled <- mutate(change, frequency = scale(frequency), time = scale(time))
+
 simulation1.lm <- lmer(
     f1 ~
         time *
         frequency *
         vowel +
         (1|word),
-    data = change
+    data = change.scaled
 )
 
 summary(simulation1.lm)
