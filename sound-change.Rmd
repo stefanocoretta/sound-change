@@ -1801,7 +1801,11 @@ for (iteration in 1:iterations) {
         for (word in 1:lexicon.size) {
             word.frequency <- lexicon5[[word]][[2]]
             now.frequency <- c(now.frequency, word.frequency)
-            word.f1.mean <- mean(unlist(lexicon5[[word]][[4]]))
+            if (is.null(unlist(lexicon5[[word]][[4]])) == FALSE) {
+                word.f1.mean <- mean(unlist(lexicon5[[word]][[4]]))
+            } else {
+                word.f1.mean <- NA
+            }
             f1.mean <- c(f1.mean, word.f1.mean)
         }
         vowelss <- rep_len(c("BAT", "BET", "BIT"), lexicon.size)
