@@ -2188,14 +2188,19 @@ plot_smooth(simulation2.gam.ar, view="time", cond=list(frequency=80, vowel.ord =
 
 ## Simulation 5
 
-```{r}
+```{r change5-scaled}
+change5.scaled <- mutate(change5, frequency = scale(frequency), time = scale(time))
+```
+
+
+```{r change5-lmer}
 simulation5.lm <- lmer(
     f1 ~
         time *
         frequency *
         vowel +
         (1|word),
-    data = change5,
+    data = change5.scaled,
     REML = FALSE
 )
 
@@ -2207,7 +2212,7 @@ simulation5.lm.null <- lmer(
         frequency *
         vowel +
         (1|word),
-    data = change5,
+    data = change5.scaled,
     REML = FALSE
 )
 
