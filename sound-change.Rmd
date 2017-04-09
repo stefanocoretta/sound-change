@@ -271,7 +271,11 @@ for (iteration in 1:iterations) {
         for (word in 1:lexicon.size) {
             word.frequency <- lexicon[[word]][[2]]
             now.frequency <- c(now.frequency, word.frequency)
-            word.f1.mean <- mean(unlist(lexicon[[word]][[4]]))
+            if (is.null(unlist(lexicon[[word]][[4]])) == FALSE) {
+                word.f1.mean <- mean(unlist(lexicon[[word]][[4]]))
+            } else {
+                word.f1.mean <- NA
+            }
             f1.mean <- c(f1.mean, word.f1.mean)
         }
         vowelss <- rep(c("BAT", "BET"), lexicon.size/2)
@@ -681,9 +685,17 @@ for (iteration in 1:iterations) {
         for (word in 1:lexicon.size) {
             word.frequency <- lexicon2[[word]][[2]]
             now.frequency <- c(now.frequency, word.frequency)
-            word.f1.mean <- mean(unlist(lexicon2[[word]][[4]]))
+            if (is.null(unlist(lexicon2[[word]][[4]])) == FALSE) {
+                word.f1.mean <- mean(unlist(lexicon2[[word]][[4]]))
+            } else {
+                word.f1.mean <- NA
+            }
             f1.mean <- c(f1.mean, word.f1.mean)
-            word.f2.mean <- mean(unlist(lexicon2[[word]][[5]]))
+            if (is.null(unlist(lexicon2[[word]][[5]])) == FALSE) {
+                word.f2.mean <- mean(unlist(lexicon2[[word]][[5]]))
+            } else {
+                word.f2.mean <- NA
+            }
             f2.mean <- c(f2.mean, word.f2.mean)
         }
         vowelss <- rep_len(c("BAT", "BET", "BIT"), lexicon.size)
@@ -1077,7 +1089,11 @@ for (iteration in 1:iterations) {
         for (word in 1:lexicon.size) {
             word.frequency <- lexicon3[[word]][[2]]
             now.frequency <- c(now.frequency, word.frequency)
-            word.f1.mean <- mean(unlist(lexicon3[[word]][[4]]))
+            if (is.null(unlist(lexicon3[[word]][[4]])) == FALSE) {
+                word.f1.mean <- mean(unlist(lexicon3[[word]][[4]]))
+            } else {
+                word.f1.mean <- NA
+            }
             f1.mean <- c(f1.mean, word.f1.mean)
         }
         vowelss <- rep_len(c("BAT", "BET", "BIT"), lexicon.size)
@@ -1415,8 +1431,16 @@ for (iteration in 1:iterations) {
         for (word in 1:lexicon.size) {
             word.frequency <- lexicon4[[word]][[2]]
             now.frequency <- c(now.frequency, word.frequency)
-            word.f1.mean <- mean(unlist(lexicon4[[word]][[4]]))
-            word.f2.mean <- mean(unlist(lexicon4[[word]][[5]]))
+            if (is.null(unlist(lexicon4[[word]][[4]])) == FALSE) {
+                word.f1.mean <- mean(unlist(lexicon4[[word]][[4]]))
+            } else {
+                word.f1.mean <- NA
+            }
+            if (is.null(unlist(lexicon4[[word]][[5]])) == FALSE) {
+                word.f2.mean <- mean(unlist(lexicon4[[word]][[5]]))
+            } else {
+                word.f2.mean <- NA
+            }
             f1.mean <- c(f1.mean, word.f1.mean)
             f2.mean <- c(f2.mean, word.f2.mean)
         }
