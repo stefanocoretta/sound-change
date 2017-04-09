@@ -1542,6 +1542,297 @@ ggplot(change4.bin, aes(time, f2, colour = freq.bin)) +
     labs(title = "Change of mean F1 through time in high and low frequency words")
 ```
 
+# Simulation 5
+
+This is a modification of Simulation 3: now words have equally spaced frequency values, equally distributed across vowel categories.
+
+```{r createLexicon5}
+createLexicon5 <- function(size, frequency, group.size) {
+
+    word <- seq(1, size)
+    vowel <- rep(c("BAT", "BET", "BIT"), size)
+    class <- sample(rep(1:(size/group.size), each = group.size))
+#    class <- c(rbind(sample(1:(size/group.size)), sample(1:(size/group.size))))
+    cloud.f1 <- list()
+    lexicon <- list()
+
+    for (i in 1:size) {
+        lexicon[[i]] <- list(word[i], frequency[i], vowel[i], cloud.f1,
+                             class[i]
+                             )
+    }
+
+    return(lexicon)
+}
+```
+
+```{r populateLexicon5}
+populateLexicon5 <- function(lexicon, iterations, probs, bat.f1, bet.f1, bit.f1) {
+    for (i in 1:iterations) {
+        item <- sample(seq(1, length(lexicon)), 1, prob = probs)
+        cloud.size <- length(lexicon[[item]][[4]])
+        if (cloud.size == 0) {
+            if (lexicon[[item]][[3]] == "BAT") {
+                f1 <- bat.f1
+            } else if (lexicon[[item]][[3]] == "BET") {
+                f1 <- bet.f1
+            } else {
+                f1 <- bit.f1
+            }
+            lexicon[[item]][[4]][[1]] <- produceFormants(f1)
+        } else if (cloud.size == 1) {
+            target <- lexicon[[item]][[4]][[1]]
+            lexicon[[item]][[4]][[cloud.size + 1]] <- produceFormants(target)
+        } else {
+            target <- sample(unlist(lexicon[[item]][[4]]), 1)
+            lexicon[[item]][[4]][[cloud.size + 1]] <- produceFormants(target)
+        }
+    }
+    return(lexicon)
+}
+```
+
+```{r lexicon5}
+set.seed(4321)
+
+lexicon.size <- 1000
+frequency <- rep(seq(1, 334), each = 3)[1:lexicon.size]
+group.size <- 10
+lexicon5 <- createLexicon5(lexicon.size, frequency, group.size)
+
+iterations <- 50000
+bat.f1 <- 6.5
+bet.f1 <- 5.5
+bit.f1 <- 4.5
+lexicon5 <- populateLexicon5(lexicon5, iterations, frequency, bat.f1, bet.f1, bit.f1)
+source.lexicon5 <- lexicon5
+
+groups5 <- list()
+
+for (i in 1:(lexicon.size/group.size)) {
+    groups5[[i]] <- list(i, list())
+}
+
+for (i in 1:lexicon.size) {
+    class <- lexicon5[[i]][[5]]
+    groups5[[class]][[2]][[length(groups5[[class]][[2]]) + 1]] <- i
+}
+
+change5 <- data.frame("word" = numeric(),
+                     "time" = numeric(),
+                     "frequency" = numeric(),
+                     "f1" = numeric(),
+                     "vowel" = character()
+                     )
+```
+
+```{r vowel-shift-5}
+iterations <- 200000
+bias <- -0.2
+
+for (iteration in 1:iterations) {
+    word <- sample(1:lexicon.size, 1, prob = frequency)
+
+    #### Produce the chosen word ####
+
+    if (lexicon5[[word]][[3]] == "BAT") {
+
+        #### The chosen word is a BAT word ####
+
+        if (length(lexicon5[[word]][[4]]) == 0) {
+            lexicon5[[word]][[4]] <- list(produceFormants(bat.f1, bias))
+        } else {
+            target <- sample(1:length(lexicon5[[word]][[4]]), 1)
+            outcome <- produceFormants(lexicon5[[word]][[4]][[target]], bias)
+            lexicon5[[word]][[4]][[length(lexicon5[[word]][[4]]) + 1]] <- outcome
+        }
+
+        #### Categorisation process ####
+
+        class <- lexicon5[[word]][[5]][[1]]
+        pool.e <- NULL
+        for (i in 1:group.size){
+            other.word <- groups5[[class]][[2]][[i]]
+            if (lexicon5[[other.word]][[3]] == "BET") {
+                pool.e <- c(pool.e, unlist(lexicon5[[other.word]][[4]]))
+            }
+        }
+        if (length(pool.e) > 0) {# some words don't have exemplars
+            if (outcome <= max(pool.e)) {
+                encoding.prob <- lexicon5[[word]][[2]] /
+                                max(frequency)
+                encode <- sample(c("yes", "no"),
+                                 1,
+                                 prob = c(encoding.prob,
+                                          1 - encoding.prob
+                                 )
+                )
+
+                #### Encoding function ####
+                if (encode == "no") {
+                    for (i in 1:group.size) {
+                        other.word <- groups5[[class]][[2]][[i]]
+                        if (length(lexicon5[[other.word]][[4]]) != 0) {
+                            for (j in length(lexicon5[[other.word]][[4]]):1) {
+                                if (lexicon5[[other.word]][[4]][[j]] == outcome) {
+                                    if (length(lexicon5[[other.word]][[4]]) == 1) {
+                                        lexicon5[[other.word]][[4]] <- list()
+                                    } else {
+                                        lexicon5[[other.word]][[4]][[j]] <- NULL
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    } else if (lexicon5[[word]][[3]] == "BET") {
+
+        #### The chosen word is a BET word ####
+
+        if (length(lexicon5[[word]][[4]]) == 0) {
+            lexicon5[[word]][[4]] <- list(produceFormants(bet.f1))
+        } else {
+            target <- sample(1:length(lexicon5[[word]][[4]]), 1)
+            outcome <- produceFormants(lexicon5[[word]][[4]][[target]])
+            lexicon5[[word]][[4]][[length(lexicon5[[word]][[4]]) + 1]] <- outcome
+        }
+
+        #### Categorisation process ####
+
+        class <- lexicon5[[word]][[5]][[1]]
+        pool.a <- NULL
+        pool.i <- NULL
+        for (i in 1:group.size){
+            other.word <- groups5[[class]][[2]][[i]]
+            if (lexicon5[[other.word]][[3]] == "BAT") {
+                pool.a <- c(pool.a, unlist(lexicon5[[other.word]][[4]]))
+            } else if (lexicon5[[other.word]][[3]] == "BIT") {
+                pool.i <- c(pool.i, unlist(lexicon5[[other.word]][[4]]))
+            }
+        }
+        if (length(pool.a) > 0 & length(pool.i) > 0) {# some words don't have exemplars
+            if (outcome >= min(pool.a) || outcome <= max(pool.i)) {
+                encoding.prob <- lexicon5[[word]][[2]] /
+                                max(frequency)
+                encode <- sample(c("yes", "no"),
+                                 1,
+                                 prob = c(encoding.prob,
+                                          1 - encoding.prob
+                                 )
+                )
+
+                #### Encoding function ####
+                if (encode == "no") {
+                    for (i in 1:group.size) {
+                        other.word <- groups5[[class]][[2]][[i]]
+                        if (length(lexicon5[[other.word]][[4]]) != 0) {
+                            for (j in length(lexicon5[[other.word]][[4]]):1) {
+                                if (lexicon5[[other.word]][[4]][[j]] == outcome) {
+                                    if (length(lexicon5[[other.word]][[4]]) == 1) {
+                                        lexicon5[[other.word]][[4]] <- list()
+                                    } else {
+                                        lexicon5[[other.word]][[4]][[j]] <- NULL
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    } else {
+        #### The chosen word is a BIT word ####
+
+        if (length(lexicon5[[word]][[4]]) == 0) {
+            lexicon5[[word]][[4]] <- list(produceFormants(bit.f1))
+        } else {
+            target <- sample(1:length(lexicon5[[word]][[4]]), 1)
+            outcome <- produceFormants(lexicon5[[word]][[4]][[target]])
+            lexicon5[[word]][[4]][[length(lexicon5[[word]][[4]]) + 1]] <- outcome
+        }
+
+        #### Categorisation process ####
+
+        class <- lexicon5[[word]][[5]][[1]]
+        pool.e <- NULL
+        for (i in 1:group.size){
+            other.word <- groups5[[class]][[2]][[i]]
+            if (lexicon5[[other.word]][[3]] == "BET") {
+                pool.e <- c(pool.e, unlist(lexicon5[[other.word]][[4]]))
+            }
+        }
+        if (length(pool.e) > 0) {# some words don't have exemplars
+            if (outcome >= min(pool.e)) {
+                encoding.prob <- lexicon5[[word]][[2]] /
+                                max(frequency)
+                encode <- sample(c("yes", "no"),
+                                 1,
+                                 prob = c(encoding.prob,
+                                          1 - encoding.prob
+                                 )
+                )
+
+                #### Encoding function ####
+                if (encode == "no") {
+                    for (i in 1:group.size) {
+                        other.word <- groups5[[class]][[2]][[i]]
+                        if (length(lexicon5[[other.word]][[4]]) != 0) {
+                            for (j in length(lexicon5[[other.word]][[4]]):1) {
+                                if (lexicon5[[other.word]][[4]][[j]] == outcome) {
+                                    if (length(lexicon5[[other.word]][[4]]) == 1) {
+                                        lexicon5[[other.word]][[4]] <- list()
+                                    } else {
+                                        lexicon5[[other.word]][[4]][[j]] <- NULL
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    if (iteration %% 1000 == 0) {
+        now.frequency <- NULL
+        f1.mean <- NULL
+        for (word in 1:lexicon.size) {
+            word.frequency <- lexicon5[[word]][[2]]
+            now.frequency <- c(now.frequency, word.frequency)
+            word.f1.mean <- mean(unlist(lexicon5[[word]][[4]]))
+            f1.mean <- c(f1.mean, word.f1.mean)
+        }
+        vowelss <- rep_len(c("BAT", "BET", "BIT"), lexicon.size)
+        words <- seq(1, lexicon.size)
+        time <- rep(iteration, lexicon.size)
+        change.current <- data.frame("word" = words, time, "frequency" = now.frequency, "f1" = f1.mean, "vowel" = vowelss)
+        change5 <- rbind(change5, change.current)
+    }
+}
+```
+
+```{r freq-bin}
+change5.bin <- mutate(change5,
+                 freq.bin = ifelse(frequency < max(frequency)/3,
+                                   "low",
+                                   ifelse(frequency < (max(frequency)/3) * 2,
+                                          "medium",
+                                          "high")
+                                   )
+                 )
+```
+
+```{r freq-plot}
+ggplot(change5.bin, aes(time, f1, colour = freq.bin)) +
+    facet_grid(. ~ vowel) +
+    geom_smooth(method = "lm") +
+    xlab("time (iterations)") +
+    ylab("F1 (Barks)") +
+    scale_colour_discrete(name = "Frequency bin")
+```
+
 # Analysis
 
 ## Simulation 1
@@ -1890,3 +2181,127 @@ plot_smooth(simulation2.gam.ar, view="time", cond=list(frequency=80, vowel.ord =
 #            rug=F, col="yellow", add=T)
 ```
 
+## Simulation 5
+
+```{r}
+simulation5.lm <- lmer(
+    f1 ~
+        time *
+        frequency *
+        vowel +
+        (1|word),
+    data = change5,
+    REML = FALSE
+)
+
+summary(simulation5.lm)
+
+simulation5.lm.null <- lmer(
+    f1 ~
+        time +
+        frequency *
+        vowel +
+        (1|word),
+    data = change5,
+    REML = FALSE
+)
+
+anova(simulation5.lm.null, simulation5.lm)
+```
+
+### GAM
+
+```{r change3}
+change5$word.ord <- as.ordered(change5$word)
+change5$vowel.ord <- as.ordered(change5$vowel)
+contrasts(change5$vowel.ord) <- "contr.treatment"
+contrasts(change5$vowel.ord) <- "contr.treatment"
+change5 <- change5 %>%
+#    na.omit() %>%
+    arrange(word, time) %>%
+    start_event(column = "time", event = c("word"))
+```
+
+
+```{r simulation5-gam}
+simulation5.gam <- bam(
+    f1 ~
+        frequency +
+        vowel.ord +
+        s(time, bs = "cr") +
+        s(time, by = frequency, bs = "cr") +
+        ti(time, frequency, by = vowel.ord) +
+        s(time, by = vowel.ord, bs = "cr"),
+    data = change5,
+    method = "fREML"
+)
+
+summary(simulation5.gam)
+
+simulation5.gam.null <- bam(
+    f1 ~
+#        frequency +
+        vowel.ord +
+        s(time, bs = "cr") +
+#        s(time, by = frequency, bs = "cr") +
+#        ti(time, frequency, by = vowel) +
+        s(time, by = vowel.ord, bs = "cr"),
+    data = change5,
+    method = "ML"
+)
+
+compareML(simulation5.gam.null, simulation5.gam)
+```
+
+```{r simulation5-gam-plot}
+fvisgam(simulation5.gam, view = c("time","frequency"),
+        cond = list(vowel.ord = "BIT"),
+        ylim = quantile(change5$frequency, c(0, 1))
+        )
+```
+
+```{r simulation3-gam-acr}
+acf_plot(resid(simulation5.gam), split_by=list(change5$word.ord))
+```
+
+```{r simulation5-gam-ar}
+r1 <- start_value_rho(simulation5.gam)
+
+simulation5.gam.ar <- bam(
+    f1 ~
+        frequency +
+        vowel.ord +
+        s(time, bs = "cr") +
+        s(time, by = frequency, bs = "cr") +
+        ti(time, frequency, by = vowel.ord) +
+        s(time, by = vowel.ord, bs = "cr"),
+    data = change5,
+    method = "fREML",
+    rho = r1,
+    AR.start = change5$start.event
+)
+
+summary(simulation5.gam.ar)
+```
+
+```{r simulation5-gam-ar-acr}
+acf_resid(simulation5.gam.ar, split_pred="AR.start")
+```
+
+```{r simulation5-gam-ar-plot}
+fvisgam(simulation5.gam.ar, view = c("time","frequency"),
+        cond = list(vowel.ord = "BIT"),
+        ylim = quantile(change5$frequency, c(0, 1))
+        )
+```
+
+```{r}
+plot_smooth(simulation5.gam.ar, view="time", cond=list(frequency=10, vowel.ord = "BET"),
+            rug=F, col="red")
+plot_smooth(simulation5.gam.ar, view="time", cond=list(frequency=40, vowel.ord = "BET"),
+            rug=F, col="blue", add=T)
+plot_smooth(simulation5.gam.ar, view="time", cond=list(frequency=80, vowel.ord = "BET"),
+            rug=F, col="green", add=T)
+#plot_smooth(simulation3.gam.ar, view="time", cond=list(frequency=120, vowel.ord = "BET"),
+#            rug=F, col="yellow", add=T)
+```
