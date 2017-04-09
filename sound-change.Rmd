@@ -1829,7 +1829,8 @@ change5.bin <- mutate(change5,
 ```
 
 ```{r freq-plot}
-ggplot(change5.bin, aes(time, f1, colour = freq.bin)) +
+filter(change5.bin, freq.bin != "medium") %>%
+ggplot(aes(time, f1, colour = freq.bin)) +
     facet_grid(. ~ vowel) +
     geom_smooth(method = "lm") +
     xlab("time (iterations)") +
