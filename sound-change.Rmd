@@ -2216,7 +2216,7 @@ anova(simulation5.lm.null, simulation5.lm)
 
 ### GAM
 
-```{r change3}
+```{r change5}
 change5$word.ord <- as.ordered(change5$word)
 change5$vowel.ord <- as.ordered(change5$vowel)
 contrasts(change5$vowel.ord) <- "contr.treatment"
@@ -2294,6 +2294,14 @@ acf_resid(simulation5.gam.ar, split_pred="AR.start")
 ```
 
 ```{r simulation5-gam-ar-plot}
+fvisgam(simulation5.gam.ar, view = c("time","frequency"),
+        cond = list(vowel.ord = "BAT"),
+        ylim = quantile(change5$frequency, c(0, 1))
+        )
+fvisgam(simulation5.gam.ar, view = c("time","frequency"),
+        cond = list(vowel.ord = "BET"),
+        ylim = quantile(change5$frequency, c(0, 1))
+        )
 fvisgam(simulation5.gam.ar, view = c("time","frequency"),
         cond = list(vowel.ord = "BIT"),
         ylim = quantile(change5$frequency, c(0, 1))
