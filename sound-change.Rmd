@@ -1850,6 +1850,9 @@ change5.bin <- mutate(change5,
                                           "high")
                                    )
                  )
+change5.bin <- mutate(change5,
+                 freq.bin = ifelse(frequency < max(frequency)/2, "low", "high")
+)
 ```
 
 ```{r freq-plot}
@@ -2283,7 +2286,7 @@ simulation5.gam.null <- bam(
 #        ti(time, frequency, by = vowel) +
         s(time, by = vowel.ord, bs = "cr"),
     data = change5,
-    method = "ML"
+    method = "fREML"
 )
 
 compareML(simulation5.gam.null, simulation5.gam)
@@ -2339,13 +2342,28 @@ fvisgam(simulation5.gam.ar, view = c("time","frequency"),
         )
 ```
 
-```{r}
+```{r change5-smooths-BET}
 plot_smooth(simulation5.gam.ar, view="time", cond=list(frequency=10, vowel.ord = "BET"),
             rug=F, col="red")
 plot_smooth(simulation5.gam.ar, view="time", cond=list(frequency=40, vowel.ord = "BET"),
             rug=F, col="blue", add=T)
 plot_smooth(simulation5.gam.ar, view="time", cond=list(frequency=80, vowel.ord = "BET"),
             rug=F, col="green", add=T)
-#plot_smooth(simulation3.gam.ar, view="time", cond=list(frequency=120, vowel.ord = "BET"),
-#            rug=F, col="yellow", add=T)
 ```
+
+```{r change5-smooths-BIT}
+plot_smooth(simulation5.gam.ar, view="time", cond=list(frequency=10, vowel.ord = "BIT"),
+            rug=F, col="red")
+plot_smooth(simulation5.gam.ar, view="time", cond=list(frequency=40, vowel.ord = "BIT"),
+            rug=F, col="blue", add=T)
+plot_smooth(simulation5.gam.ar, view="time", cond=list(frequency=80, vowel.ord = "BIT"),
+            rug=F, col="green", add=T)
+```
+
+```{r}
+change5.bin %>%
+    ggplot(aes(time, f1, colour = freq.bin)) +
+    geom_smooth() +
+    facet_grid(. ~ vowel)
+```
+
