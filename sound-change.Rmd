@@ -39,7 +39,7 @@ zipfDistr <- function(size) {
 }
 ```
 
-We then need a function for generating values for the BAT and BET vowels in the lexicon. Since the main change affected the second formant (F1), the function will return F1 values (in Barks). The function takes a `target` value, it applies random noise and a `bias` (if specified; the default is `0`). A noise window of 0.5 (between -0.25 and 0.25) is used for the application of the production noise.
+We then need a function for generating values for the BART and BAT vowels in the lexicon. Since the main change affected the second formant (F1), the function will return F1 values (in Barks). The function takes a `target` value, it applies random noise and a `bias` (if specified; the default is `0`). A noise window of 0.5 (between -0.25 and 0.25) is used for the application of the production noise.
 
 ```{r produceFormants}
 produceFormants <- function(target, bias = 0) {
@@ -51,11 +51,11 @@ produceFormants <- function(target, bias = 0) {
 
 # Simulation 1
 
-The first simulation models the effects of an enrouching category affected by a bias on the category towards which the former is moving. In our case, the encrouching category is the the BAT vowel, while the other category is the BET vowel.
+The first simulation models the effects of an enrouching category affected by a bias on the category towards which the former is moving. In our case, the encrouching category is the the BART vowel, while the other category is the BAT vowel.
 
 ## Functions
 
-The following chunks define some functions that will be used to initialise a lexicon of words containing either a BAT or a BET vowel.
+The following chunks define some functions that will be used to initialise a lexicon of words containing either a BART or a BAT vowel.
 
 The function `createLexicon()` generates and empty lexicon of specified `size` and it assings the specified `frequency` distribution to the words.
 
@@ -63,7 +63,7 @@ The function `createLexicon()` generates and empty lexicon of specified `size` a
 createLexicon <- function(size, frequency, group.size) {
 
     word <- seq(1, size)
-    vowel <- rep(c("BAT", "BET"), size)
+    vowel <- rep(c("BART", "BAT"), size)
     class <- sample(rep(1:(size/group.size), each = group.size))
 #    class <- c(rbind(sample(1:(size/group.size)), sample(1:(size/group.size))))
     cloud <- list()
@@ -78,16 +78,16 @@ createLexicon <- function(size, frequency, group.size) {
 }
 ```
 
-The function `populateLexicon()` adds formant values to the lexical items in the lexicon, following a normal distribution. It follows the principles outlined in @pierrehumbert2001 and @wedel2007. The chosen standard values for F1 are 6.5 Barks for BAT and 5 for BET.
+The function `populateLexicon()` adds formant values to the lexical items in the lexicon, following a normal distribution. It follows the principles outlined in @pierrehumbert2001 and @wedel2007. The chosen standard values for F1 are 6.5 Barks for BART and 5 for BAT.
 
 ```{r populateLexicon}
-populateLexicon <- function(lexicon, iterations, probs, bat.f1, bet.f1) {
+populateLexicon <- function(lexicon, iterations, probs, bart.f1, bat.f1) {
     for (i in 1:iterations) {
         item <- sample(seq(1, length(lexicon)), 1, prob = probs)
         cloud.size <- length(lexicon[[item]][[4]])
         if (item %% 2 != 0) {
             if (cloud.size == 0) {
-                lexicon[[item]][[4]][[1]] <- produceFormants(bat.f1)
+                lexicon[[item]][[4]][[1]] <- produceFormants(bart.f1)
             } else if (cloud.size == 1) {
                 target <- lexicon[[item]][[4]][[1]]
                 lexicon[[item]][[4]][[cloud.size + 1]] <- produceFormants(target)
@@ -97,7 +97,7 @@ populateLexicon <- function(lexicon, iterations, probs, bat.f1, bet.f1) {
             }
         } else {
             if (cloud.size == 0) {
-                lexicon[[item]][[4]][[1]] <- produceFormants(bet.f1)
+                lexicon[[item]][[4]][[1]] <- produceFormants(bat.f1)
             } else if (cloud.size == 1) {
                 target <- lexicon[[item]][[4]][[1]]
                 lexicon[[item]][[4]][[cloud.size + 1]] <- produceFormants(target)
@@ -113,7 +113,7 @@ populateLexicon <- function(lexicon, iterations, probs, bat.f1, bet.f1) {
 
 ## Simulate shift
 
-We can now populate a lexicon with exemplars for BAT and BET vowels.
+We can now populate a lexicon with exemplars for BART and BAT vowels.
 
 ```{r lexicon}
 set.seed(4321)
@@ -124,9 +124,9 @@ group.size <- 10
 lexicon <- createLexicon(lexicon.size, frequency, group.size)
 
 iterations <- 50000
-bat.f1 <- 6.5
-bet.f1 <- 5.5
-lexicon <- populateLexicon(lexicon, iterations, frequency, bat.f1, bet.f1)
+bart.f1 <- 6.5
+bat.f1 <- 5.5
+lexicon <- populateLexicon(lexicon, iterations, frequency, bart.f1, bat.f1)
 source.lexicon <- lexicon
 
 groups <- list()
@@ -159,12 +159,12 @@ for (iteration in 1:iterations) {
 
     #### Produce the chosen word ####
 
-    if (word %% 2 != 0) { # odd words have "BAT"
+    if (word %% 2 != 0) { # odd words have "BART"
 
-        #### The chosen word is a BAT word ####
+        #### The chosen word is a BART word ####
 
         if (length(lexicon[[word]][[4]]) == 0) {
-            lexicon[[word]][[4]] <- list(produceFormants(bat.f1, bias))
+            lexicon[[word]][[4]] <- list(produceFormants(bart.f1, bias))
         } else {
             target <- sample(1:length(lexicon[[word]][[4]]), 1)
             outcome <- produceFormants(lexicon[[word]][[4]][[target]], bias)
@@ -213,10 +213,10 @@ for (iteration in 1:iterations) {
         }
     } else {
 
-        #### The chosen word is a BET word ####
+        #### The chosen word is a BAT word ####
 
         if (length(lexicon[[word]][[4]]) == 0) {
-            lexicon[[word]][[4]] <- list(produceFormants(bet.f1))
+            lexicon[[word]][[4]] <- list(produceFormants(bat.f1))
         } else {
             target <- sample(1:length(lexicon[[word]][[4]]), 1)
             outcome <- produceFormants(lexicon[[word]][[4]][[target]])
@@ -278,7 +278,7 @@ for (iteration in 1:iterations) {
             }
             f1.mean <- c(f1.mean, word.f1.mean)
         }
-        vowelss <- rep(c("BAT", "BET"), lexicon.size/2)
+        vowelss <- rep(c("BART", "BAT"), lexicon.size/2)
         words <- seq(1, lexicon.size)
         time <- rep(iteration, lexicon.size)
         change.current <- data.frame("word" = words, time, "frequency" = now.frequency, "f1" = f1.mean, "vowel" = vowelss)
@@ -290,19 +290,19 @@ for (iteration in 1:iterations) {
 ## Plotting
 
 ```{r plot-source, eval = FALSE}
-bat.source <- NULL
+bart.source <- NULL
 for (i in seq(1, 1000, by = 2)) {
+    bart.source <- c(bart.source, unlist(source.lexicon[[i]][[4]]))
+}
+
+bat.source <- NULL
+for (i in seq(2, 1000, by = 2)) {
     bat.source <- c(bat.source, unlist(source.lexicon[[i]][[4]]))
 }
 
-bet.source <- NULL
-for (i in seq(2, 1000, by = 2)) {
-    bet.source <- c(bet.source, unlist(source.lexicon[[i]][[4]]))
-}
-
 vowels.source <- data.frame(
-    f1 = c(bat.source, bet.source),
-    vowel = c(rep("BAT", times = length(bat.source)), rep("BET", times = length(bet.source)))
+    f1 = c(bart.source, bat.source),
+    vowel = c(rep("BART", times = length(bart.source)), rep("BAT", times = length(bat.source)))
 )
 
 ggplot(vowels.source, aes(f1, colour = vowel)) +
@@ -312,19 +312,19 @@ ggplot(vowels.source, aes(f1, colour = vowel)) +
 
 
 ```{r plot-final, eval = FALSE}
-bat <- NULL
+bart <- NULL
 for (i in seq(1, 1000, by = 2)) {
+    bart <- c(bart, unlist(lexicon[[i]][[4]]))
+}
+
+bat <- NULL
+for (i in seq(2, 1000, by = 2)) {
     bat <- c(bat, unlist(lexicon[[i]][[4]]))
 }
 
-bet <- NULL
-for (i in seq(2, 1000, by = 2)) {
-    bet <- c(bet, unlist(lexicon[[i]][[4]]))
-}
-
 vowels <- data.frame(
-    f1 = c(bat, bet),
-    vowel = c(rep("BAT", times = length(bat)), rep("BET", times = length(bet)))
+    f1 = c(bart, bat),
+    vowel = c(rep("BART", times = length(bart)), rep("BAT", times = length(bat)))
 )
 
 ggplot(vowels, aes(f1, colour = vowel)) +
@@ -363,7 +363,7 @@ There's seems to be an interaction between the noise proportion and the bias pro
 createLexicon2 <- function(size, frequency, group.size) {
 
     word <- seq(1, size)
-    vowel <- rep(c("BAT", "BET", "BIT"), size)
+    vowel <- rep(c("BART", "BAT", "BET"), size)
     class <- sample(rep(1:(size/group.size), each = group.size))
 #    class <- c(rbind(sample(1:(size/group.size)), sample(1:(size/group.size))))
     cloud.f1 <- list()
@@ -379,20 +379,20 @@ createLexicon2 <- function(size, frequency, group.size) {
 ```
 
 ```{r populateLexicon2}
-populateLexicon2 <- function(lexicon, iterations, probs, bat.f1, bat.f2, bet.f1, bet.f2, bit.f1, bit.f2) {
+populateLexicon2 <- function(lexicon, iterations, probs, bart.f1, bart.f2, bat.f1, bat.f2, bet.f1, bet.f2) {
     for (i in 1:iterations) {
         item <- sample(seq(1, length(lexicon)), 1, prob = probs)
         cloud.size <- length(lexicon[[item]][[4]])
         if (cloud.size == 0) {
-            if (lexicon[[item]][[3]] == "BAT") {
+            if (lexicon[[item]][[3]] == "BART") {
+                f1 <- bart.f1
+                f2 <- bart.f2
+            } else if (lexicon[[item]][[3]] == "BAT") {
                 f1 <- bat.f1
                 f2 <- bat.f2
-            } else if (lexicon[[item]][[3]] == "BET") {
+            } else {
                 f1 <- bet.f1
                 f2 <- bet.f2
-            } else {
-                f1 <- bit.f1
-                f2 <- bit.f2
             }
             lexicon[[item]][[4]][[1]] <- produceFormants(f1)
             lexicon[[item]][[5]][[1]] <- produceFormants(f2)
@@ -421,13 +421,13 @@ group.size <- 10
 lexicon2 <- createLexicon2(lexicon.size, frequency, group.size)
 
 iterations <- 50000
-bat.f1 <- 6.5
-bat.f2 <- 12.7
-bet.f1 <- 5.5
-bet.f2 <- 13
-bit.f1 <- 4
-bit.f2 <- 13.3
-lexicon2 <- populateLexicon2(lexicon2, iterations, frequency, bat.f1, bat.f2, bet.f1, bet.f2, bit.f1, bit.f2)
+bart.f1 <- 6.5
+bart.f2 <- 12.7
+bat.f1 <- 5.5
+bat.f2 <- 13
+bet.f1 <- 4
+bet.f2 <- 13.3
+lexicon2 <- populateLexicon2(lexicon2, iterations, frequency, bart.f1, bart.f2, bat.f1, bat.f2, bet.f1, bet.f2)
 source.lexicon2 <- lexicon2
 
 groups2 <- list()
@@ -459,13 +459,13 @@ for (iteration in 1:iterations) {
 
     #### Produce the chosen word ####
 
-    if (lexicon2[[word]][[3]] == "BAT") {
+    if (lexicon2[[word]][[3]] == "BART") {
 
-        #### The chosen word is a BAT word ####
+        #### The chosen word is a BART word ####
 
         if (length(lexicon2[[word]][[4]]) == 0) {
-            lexicon2[[word]][[4]] <- list(produceFormants(bat.f1, f1.bias))
-            lexicon2[[word]][[5]] <- list(produceFormants(bat.f2, f2.bias))
+            lexicon2[[word]][[4]] <- list(produceFormants(bart.f1, f1.bias))
+            lexicon2[[word]][[5]] <- list(produceFormants(bart.f2, f2.bias))
         } else {
             target <- sample(1:length(lexicon2[[word]][[4]]), 1)
             outcome.f1 <- produceFormants(lexicon2[[word]][[4]][[target]], f1.bias)
@@ -492,7 +492,7 @@ for (iteration in 1:iterations) {
         pool.f2 <- NULL
         for (i in 1:group.size){
             other.word <- groups2[[class]][[2]][[i]]
-            if (lexicon2[[other.word]][[3]] == "BET") {
+            if (lexicon2[[other.word]][[3]] == "BAT") {
                 pool.f1 <- c(pool.f1, unlist(lexicon2[[other.word]][[4]]))
                 pool.f2 <- c(pool.f2, unlist(lexicon2[[other.word]][[5]]))
             }
@@ -530,13 +530,13 @@ for (iteration in 1:iterations) {
                 }
             }
         }
-    } else if (lexicon2[[word]][[3]] == "BET") {
+    } else if (lexicon2[[word]][[3]] == "BAT") {
 
-        #### The chosen word is a BET word ####
+        #### The chosen word is a BAT word ####
 
         if (length(lexicon2[[word]][[4]]) == 0) {
-            lexicon2[[word]][[4]] <- list(produceFormants(bet.f1))
-            lexicon2[[word]][[5]] <- list(produceFormants(bet.f2))
+            lexicon2[[word]][[4]] <- list(produceFormants(bat.f1))
+            lexicon2[[word]][[5]] <- list(produceFormants(bat.f2))
         } else {
             target <- sample(1:length(lexicon2[[word]][[4]]), 1)
             outcome.f1 <- produceFormants(lexicon2[[word]][[4]][[target]])
@@ -565,10 +565,10 @@ for (iteration in 1:iterations) {
         pool.i.f2 <- NULL
         for (i in 1:group.size){
             other.word <- groups2[[class]][[2]][[i]]
-            if (lexicon2[[other.word]][[3]] == "BAT") {
+            if (lexicon2[[other.word]][[3]] == "BART") {
                 pool.a.f1 <- c(pool.a.f1, unlist(lexicon2[[other.word]][[4]]))
                 pool.a.f2 <- c(pool.a.f2, unlist(lexicon2[[other.word]][[5]]))
-            } else if (lexicon2[[other.word]][[3]] == "BIT") {
+            } else if (lexicon2[[other.word]][[3]] == "BET") {
                 pool.i.f1 <- c(pool.i.f1, unlist(lexicon2[[other.word]][[4]]))
                 pool.i.f2 <- c(pool.i.f2, unlist(lexicon2[[other.word]][[5]]))
             }
@@ -607,11 +607,11 @@ for (iteration in 1:iterations) {
             }
         }
     } else {
-        #### The chosen word is a BIT word ####
+        #### The chosen word is a BET word ####
 
         if (length(lexicon2[[word]][[4]]) == 0) {
-            lexicon2[[word]][[4]] <- list(produceFormants(bit.f1))
-            lexicon2[[word]][[5]] <- list(produceFormants(bit.f2))
+            lexicon2[[word]][[4]] <- list(produceFormants(bet.f1))
+            lexicon2[[word]][[5]] <- list(produceFormants(bet.f2))
         } else {
             target <- sample(1:length(lexicon2[[word]][[4]]), 1)
             outcome.f1 <- produceFormants(lexicon2[[word]][[4]][[target]])
@@ -638,7 +638,7 @@ for (iteration in 1:iterations) {
         pool.f2 <- NULL
         for (i in 1:group.size){
             other.word <- groups2[[class]][[2]][[i]]
-            if (lexicon2[[other.word]][[3]] != "BIT") {
+            if (lexicon2[[other.word]][[3]] != "BET") {
                 pool.f1 <- c(pool.f1, unlist(lexicon2[[other.word]][[4]]))
                 pool.f2 <- c(pool.f2, unlist(lexicon2[[other.word]][[5]]))
             }
@@ -698,7 +698,7 @@ for (iteration in 1:iterations) {
             }
             f2.mean <- c(f2.mean, word.f2.mean)
         }
-        vowelss <- rep_len(c("BAT", "BET", "BIT"), lexicon.size)
+        vowelss <- rep_len(c("BART", "BAT", "BET"), lexicon.size)
         words <- seq(1, lexicon.size)
         time <- rep(iteration, lexicon.size)
         change.current <- data.frame("word" = words, time, "frequency" = now.frequency, "f1" = f1.mean, "f2" = f2.mean, "vowel" = vowelss)
@@ -708,37 +708,37 @@ for (iteration in 1:iterations) {
 ```
 
 ```{r plot-source2, eval = FALSE}
-bat.f1.source <- NULL
+bart.f1.source <- NULL
 for (i in seq(1, 1000, by = 3)) {
+    bart.f1.source <- c(bart.f1.source, unlist(source.lexicon2[[i]][[4]]))
+}
+bart.f2.source <- NULL
+for (i in seq(1, 1000, by = 3)) {
+    bart.f2.source <- c(bart.f2.source, unlist(source.lexicon2[[i]][[5]]))
+}
+
+bat.f1.source <- NULL
+for (i in seq(2, 1000, by = 3)) {
     bat.f1.source <- c(bat.f1.source, unlist(source.lexicon2[[i]][[4]]))
 }
 bat.f2.source <- NULL
-for (i in seq(1, 1000, by = 3)) {
+for (i in seq(2, 1000, by = 3)) {
     bat.f2.source <- c(bat.f2.source, unlist(source.lexicon2[[i]][[5]]))
 }
 
 bet.f1.source <- NULL
-for (i in seq(2, 1000, by = 3)) {
+for (i in seq(3, 1000, by = 3)) {
     bet.f1.source <- c(bet.f1.source, unlist(source.lexicon2[[i]][[4]]))
 }
 bet.f2.source <- NULL
-for (i in seq(2, 1000, by = 3)) {
+for (i in seq(3, 1000, by = 3)) {
     bet.f2.source <- c(bet.f2.source, unlist(source.lexicon2[[i]][[5]]))
 }
 
-bit.f1.source <- NULL
-for (i in seq(3, 1000, by = 3)) {
-    bit.f1.source <- c(bit.f1.source, unlist(source.lexicon2[[i]][[4]]))
-}
-bit.f2.source <- NULL
-for (i in seq(3, 1000, by = 3)) {
-    bit.f2.source <- c(bit.f2.source, unlist(source.lexicon2[[i]][[5]]))
-}
-
 vowels.source2 <- data.frame(
-    f1 = c(bat.f1.source, bet.f1.source, bit.f1.source),
-    f2 = c(bat.f2.source, bet.f2.source, bit.f2.source),
-    vowel = c(rep("BAT", times = length(bat.f1.source)), rep("BET", times = length(bet.f1.source)), rep("BIT", times = length(bit.f1.source)))
+    f1 = c(bart.f1.source, bat.f1.source, bet.f1.source),
+    f2 = c(bart.f2.source, bat.f2.source, bet.f2.source),
+    vowel = c(rep("BART", times = length(bart.f1.source)), rep("BAT", times = length(bat.f1.source)), rep("BET", times = length(bet.f1.source)))
 )
 
 ggplot(vowels.source2, aes(f2, f1, colour = vowel)) +
@@ -755,37 +755,37 @@ ggplot(vowels.source2, aes(f2, colour = vowel)) +
 ```
 
 ```{r plot-final2, eval = FALSE}
-bat.f1.final <- NULL
+bart.f1.final <- NULL
 for (i in seq(1, 1000, by = 3)) {
+    bart.f1.final <- c(bart.f1.final, unlist(lexicon2[[i]][[4]]))
+}
+bart.f2.final <- NULL
+for (i in seq(1, 1000, by = 3)) {
+    bart.f2.final <- c(bart.f2.final, unlist(lexicon2[[i]][[5]]))
+}
+
+bat.f1.final <- NULL
+for (i in seq(2, 1000, by = 3)) {
     bat.f1.final <- c(bat.f1.final, unlist(lexicon2[[i]][[4]]))
 }
 bat.f2.final <- NULL
-for (i in seq(1, 1000, by = 3)) {
+for (i in seq(2, 1000, by = 3)) {
     bat.f2.final <- c(bat.f2.final, unlist(lexicon2[[i]][[5]]))
 }
 
 bet.f1.final <- NULL
-for (i in seq(2, 1000, by = 3)) {
+for (i in seq(3, 1000, by = 3)) {
     bet.f1.final <- c(bet.f1.final, unlist(lexicon2[[i]][[4]]))
 }
 bet.f2.final <- NULL
-for (i in seq(2, 1000, by = 3)) {
+for (i in seq(3, 1000, by = 3)) {
     bet.f2.final <- c(bet.f2.final, unlist(lexicon2[[i]][[5]]))
 }
 
-bit.f1.final <- NULL
-for (i in seq(3, 1000, by = 3)) {
-    bit.f1.final <- c(bit.f1.final, unlist(lexicon2[[i]][[4]]))
-}
-bit.f2.final <- NULL
-for (i in seq(3, 1000, by = 3)) {
-    bit.f2.final <- c(bit.f2.final, unlist(lexicon2[[i]][[5]]))
-}
-
 vowels.final2 <- data.frame(
-    f1 = c(bat.f1.final, bet.f1.final, bit.f1.final),
-    f2 = c(bat.f2.final, bet.f2.final, bit.f2.final),
-    vowel = c(rep("BAT", times = length(bat.f1.final)), rep("BET", times = length(bet.f1.final)), rep("BIT", times = length(bit.f1.final)))
+    f1 = c(bart.f1.final, bat.f1.final, bet.f1.final),
+    f2 = c(bart.f2.final, bat.f2.final, bet.f2.final),
+    vowel = c(rep("BART", times = length(bart.f1.final)), rep("BAT", times = length(bat.f1.final)), rep("BET", times = length(bet.f1.final)))
 )
 
 ggplot(vowels.final2, aes(f2, f1, colour = vowel)) +
@@ -832,13 +832,13 @@ ggplot(change2.bin, aes(time, f2, colour = freq.bin)) +
 
 This simulation is an extention of Simulation 1, which had only two vowel categories. In this simulation I will try to add a third vowel category.
 
-This Simulation shows that high frequency words lead the change in the encroaching category (BAT), while low frequency words do in the encroached on categories (BET, BIT).
+This Simulation shows that high frequency words lead the change in the encroaching category (BART), while low frequency words do in the encroached on categories (BAT, BET).
 
 ```{r createLexicon3}
 createLexicon3 <- function(size, frequency, group.size) {
 
     word <- seq(1, size)
-    vowel <- rep(c("BAT", "BET", "BIT"), size)
+    vowel <- rep(c("BART", "BAT", "BET"), size)
     class <- sample(rep(1:(size/group.size), each = group.size))
 #    class <- c(rbind(sample(1:(size/group.size)), sample(1:(size/group.size))))
     cloud.f1 <- list()
@@ -855,17 +855,17 @@ createLexicon3 <- function(size, frequency, group.size) {
 ```
 
 ```{r populateLexicon3}
-populateLexicon3 <- function(lexicon, iterations, probs, bat.f1, bet.f1, bit.f1) {
+populateLexicon3 <- function(lexicon, iterations, probs, bart.f1, bat.f1, bet.f1) {
     for (i in 1:iterations) {
         item <- sample(seq(1, length(lexicon)), 1, prob = probs)
         cloud.size <- length(lexicon[[item]][[4]])
         if (cloud.size == 0) {
-            if (lexicon[[item]][[3]] == "BAT") {
+            if (lexicon[[item]][[3]] == "BART") {
+                f1 <- bart.f1
+            } else if (lexicon[[item]][[3]] == "BAT") {
                 f1 <- bat.f1
-            } else if (lexicon[[item]][[3]] == "BET") {
-                f1 <- bet.f1
             } else {
-                f1 <- bit.f1
+                f1 <- bet.f1
             }
             lexicon[[item]][[4]][[1]] <- produceFormants(f1)
         } else if (cloud.size == 1) {
@@ -889,10 +889,10 @@ group.size <- 10
 lexicon3 <- createLexicon3(lexicon.size, frequency, group.size)
 
 iterations <- 50000
-bat.f1 <- 6.5
-bet.f1 <- 5.5
-bit.f1 <- 4.5
-lexicon3 <- populateLexicon3(lexicon3, iterations, frequency, bat.f1, bet.f1, bit.f1)
+bart.f1 <- 6.5
+bat.f1 <- 5.5
+bet.f1 <- 4.5
+lexicon3 <- populateLexicon3(lexicon3, iterations, frequency, bart.f1, bat.f1, bet.f1)
 source.lexicon3 <- lexicon3
 
 groups3 <- list()
@@ -923,12 +923,12 @@ for (iteration in 1:iterations) {
 
     #### Produce the chosen word ####
 
-    if (lexicon3[[word]][[3]] == "BAT") {
+    if (lexicon3[[word]][[3]] == "BART") {
 
-        #### The chosen word is a BAT word ####
+        #### The chosen word is a BART word ####
 
         if (length(lexicon3[[word]][[4]]) == 0) {
-            lexicon3[[word]][[4]] <- list(produceFormants(bat.f1, bias))
+            lexicon3[[word]][[4]] <- list(produceFormants(bart.f1, bias))
         } else {
             target <- sample(1:length(lexicon3[[word]][[4]]), 1)
             outcome <- produceFormants(lexicon3[[word]][[4]][[target]], bias)
@@ -941,7 +941,7 @@ for (iteration in 1:iterations) {
         pool.e <- NULL
         for (i in 1:group.size){
             other.word <- groups3[[class]][[2]][[i]]
-            if (lexicon3[[other.word]][[3]] == "BET") {
+            if (lexicon3[[other.word]][[3]] == "BAT") {
                 pool.e <- c(pool.e, unlist(lexicon3[[other.word]][[4]]))
             }
         }
@@ -975,12 +975,12 @@ for (iteration in 1:iterations) {
                 }
             }
         }
-    } else if (lexicon3[[word]][[3]] == "BET") {
+    } else if (lexicon3[[word]][[3]] == "BAT") {
 
-        #### The chosen word is a BET word ####
+        #### The chosen word is a BAT word ####
 
         if (length(lexicon3[[word]][[4]]) == 0) {
-            lexicon3[[word]][[4]] <- list(produceFormants(bet.f1))
+            lexicon3[[word]][[4]] <- list(produceFormants(bat.f1))
         } else {
             target <- sample(1:length(lexicon3[[word]][[4]]), 1)
             outcome <- produceFormants(lexicon3[[word]][[4]][[target]])
@@ -994,9 +994,9 @@ for (iteration in 1:iterations) {
         pool.i <- NULL
         for (i in 1:group.size){
             other.word <- groups3[[class]][[2]][[i]]
-            if (lexicon3[[other.word]][[3]] == "BAT") {
+            if (lexicon3[[other.word]][[3]] == "BART") {
                 pool.a <- c(pool.a, unlist(lexicon3[[other.word]][[4]]))
-            } else if (lexicon3[[other.word]][[3]] == "BIT") {
+            } else if (lexicon3[[other.word]][[3]] == "BET") {
                 pool.i <- c(pool.i, unlist(lexicon3[[other.word]][[4]]))
             }
         }
@@ -1031,10 +1031,10 @@ for (iteration in 1:iterations) {
             }
         }
     } else {
-        #### The chosen word is a BIT word ####
+        #### The chosen word is a BET word ####
 
         if (length(lexicon3[[word]][[4]]) == 0) {
-            lexicon3[[word]][[4]] <- list(produceFormants(bit.f1))
+            lexicon3[[word]][[4]] <- list(produceFormants(bet.f1))
         } else {
             target <- sample(1:length(lexicon3[[word]][[4]]), 1)
             outcome <- produceFormants(lexicon3[[word]][[4]][[target]])
@@ -1047,7 +1047,7 @@ for (iteration in 1:iterations) {
         pool.e <- NULL
         for (i in 1:group.size){
             other.word <- groups3[[class]][[2]][[i]]
-            if (lexicon3[[other.word]][[3]] == "BET") {
+            if (lexicon3[[other.word]][[3]] == "BAT") {
                 pool.e <- c(pool.e, unlist(lexicon3[[other.word]][[4]]))
             }
         }
@@ -1096,7 +1096,7 @@ for (iteration in 1:iterations) {
             }
             f1.mean <- c(f1.mean, word.f1.mean)
         }
-        vowelss <- rep_len(c("BAT", "BET", "BIT"), lexicon.size)
+        vowelss <- rep_len(c("BART", "BAT", "BET"), lexicon.size)
         words <- seq(1, lexicon.size)
         time <- rep(iteration, lexicon.size)
         change.current <- data.frame("word" = words, time, "frequency" = now.frequency, "f1" = f1.mean, "vowel" = vowelss)
@@ -1106,24 +1106,24 @@ for (iteration in 1:iterations) {
 ```
 
 ```{r plot-source-3, eval = FALSE}
-bat.source <- NULL
+bart.source <- NULL
 for (i in seq(1, 1000, by = 3)) {
+    bart.source <- c(bart.source, unlist(source.lexicon3[[i]][[4]]))
+}
+
+bat.source <- NULL
+for (i in seq(2, 1000, by = 3)) {
     bat.source <- c(bat.source, unlist(source.lexicon3[[i]][[4]]))
 }
 
 bet.source <- NULL
-for (i in seq(2, 1000, by = 3)) {
+for (i in seq(3, 1000, by = 3)) {
     bet.source <- c(bet.source, unlist(source.lexicon3[[i]][[4]]))
 }
 
-bit.source <- NULL
-for (i in seq(3, 1000, by = 3)) {
-    bit.source <- c(bit.source, unlist(source.lexicon3[[i]][[4]]))
-}
-
 vowels.source <- data.frame(
-    f1 = c(bat.source, bet.source, bit.source),
-    vowel = c(rep("BAT", times = length(bat.source)), rep("BET", times = length(bet.source)), rep("BIT", times = length(bit.source)))
+    f1 = c(bart.source, bat.source, bet.source),
+    vowel = c(rep("BART", times = length(bart.source)), rep("BAT", times = length(bat.source)), rep("BET", times = length(bet.source)))
 )
 
 ggplot(vowels.source, aes(f1, colour = vowel)) +
@@ -1133,24 +1133,24 @@ ggplot(vowels.source, aes(f1, colour = vowel)) +
 
 
 ```{r plot-final-3, eval = FALSE}
-bat <- NULL
+bart <- NULL
 for (i in seq(1, 1000, by = 3)) {
+    bart <- c(bart, unlist(lexicon3[[i]][[4]]))
+}
+
+bat <- NULL
+for (i in seq(2, 1000, by = 3)) {
     bat <- c(bat, unlist(lexicon3[[i]][[4]]))
 }
 
 bet <- NULL
-for (i in seq(2, 1000, by = 3)) {
+for (i in seq(3, 1000, by = 3)) {
     bet <- c(bet, unlist(lexicon3[[i]][[4]]))
 }
 
-bit <- NULL
-for (i in seq(3, 1000, by = 3)) {
-    bit <- c(bit, unlist(lexicon3[[i]][[4]]))
-}
-
 vowels <- data.frame(
-    f1 = c(bat, bet, bit),
-    vowel = c(rep("BAT", times = length(bat)), rep("BET", times = length(bet)), rep("BIT", times = length(bit)))
+    f1 = c(bart, bat, bet),
+    vowel = c(rep("BART", times = length(bart)), rep("BAT", times = length(bat)), rep("BET", times = length(bet)))
 )
 
 ggplot(vowels, aes(f1, colour = vowel)) +
@@ -1189,7 +1189,7 @@ This simulation is like Simulation 1, but there is also F2. The outcome is the s
 createLexicon4 <- function(size, frequency, group.size) {
 
     word <- seq(1, size)
-    vowel <- rep(c("BAT", "BET"), size)
+    vowel <- rep(c("BART", "BAT"), size)
     class <- sample(rep(1:(size/group.size), each = group.size))
 #    class <- c(rbind(sample(1:(size/group.size)), sample(1:(size/group.size))))
     cloud.f1 <- list()
@@ -1205,17 +1205,17 @@ createLexicon4 <- function(size, frequency, group.size) {
 ```
 
 ```{r populateLexicon4}
-populateLexicon4 <- function(lexicon, iterations, probs, bat.f1, bat.f2, bet.f1, bet.f2) {
+populateLexicon4 <- function(lexicon, iterations, probs, bart.f1, bart.f2, bat.f1, bat.f2) {
     for (i in 1:iterations) {
         item <- sample(seq(1, length(lexicon)), 1, prob = probs)
         cloud.size <- length(lexicon[[item]][[4]])
         if (cloud.size == 0) {
-            if (lexicon[[item]][[3]] == "BAT") {
+            if (lexicon[[item]][[3]] == "BART") {
+                f1 <- bart.f1
+                f2 <- bart.f2
+            } else {
                 f1 <- bat.f1
                 f2 <- bat.f2
-            } else {
-                f1 <- bet.f1
-                f2 <- bet.f2
             }
             lexicon[[item]][[4]][[1]] <- produceFormants(f1)
             lexicon[[item]][[5]][[1]] <- produceFormants(f2)
@@ -1244,11 +1244,11 @@ group.size <- 5
 lexicon4 <- createLexicon4(lexicon.size, frequency, group.size)
 
 iterations <- 50000
-bat.f1 <- 6.5
-bat.f2 <- 12.7
-bet.f1 <- 5.5
-bet.f2 <- 13
-lexicon4 <- populateLexicon4(lexicon4, iterations, frequency, bat.f1, bat.f2, bet.f1, bet.f2)
+bart.f1 <- 6.5
+bart.f2 <- 12.7
+bat.f1 <- 5.5
+bat.f2 <- 13
+lexicon4 <- populateLexicon4(lexicon4, iterations, frequency, bart.f1, bart.f2, bat.f1, bat.f2)
 source.lexicon4 <- lexicon4
 
 groups4 <- list()
@@ -1280,13 +1280,13 @@ for (iteration in 1:iterations) {
 
     #### Produce the chosen word ####
 
-    if (lexicon4[[word]][[3]] == "BAT") {
+    if (lexicon4[[word]][[3]] == "BART") {
 
-        #### The chosen word is a BAT word ####
+        #### The chosen word is a BART word ####
 
         if (length(lexicon4[[word]][[4]]) == 0) {
-            lexicon4[[word]][[4]] <- list(produceFormants(bat.f1, f1.bias))
-            lexicon4[[word]][[5]] <- list(produceFormants(bat.f2, f2.bias))
+            lexicon4[[word]][[4]] <- list(produceFormants(bart.f1, f1.bias))
+            lexicon4[[word]][[5]] <- list(produceFormants(bart.f2, f2.bias))
         } else {
             target <- sample(1:length(lexicon4[[word]][[4]]), 1)
             outcome.f1 <- produceFormants(lexicon4[[word]][[4]][[target]], f1.bias)
@@ -1313,7 +1313,7 @@ for (iteration in 1:iterations) {
         pool.f2 <- NULL
         for (i in 1:group.size){
             other.word <- groups4[[class]][[2]][[i]]
-            if (lexicon4[[other.word]][[3]] != "BAT") {
+            if (lexicon4[[other.word]][[3]] != "BART") {
                 pool.f1 <- c(pool.f1, unlist(lexicon4[[other.word]][[4]]))
                 pool.f2 <- c(pool.f2, unlist(lexicon4[[other.word]][[5]]))
             }
@@ -1353,11 +1353,11 @@ for (iteration in 1:iterations) {
         }
     } else {
 
-        #### The chosen word is a BET word ####
+        #### The chosen word is a BAT word ####
 
         if (length(lexicon4[[word]][[4]]) == 0) {
-            lexicon4[[word]][[4]] <- list(produceFormants(bet.f1))
-            lexicon4[[word]][[5]] <- list(produceFormants(bet.f2))
+            lexicon4[[word]][[4]] <- list(produceFormants(bat.f1))
+            lexicon4[[word]][[5]] <- list(produceFormants(bat.f2))
         } else {
             target <- sample(1:length(lexicon4[[word]][[4]]), 1)
             outcome.f1 <- produceFormants(lexicon4[[word]][[4]][[target]])
@@ -1384,7 +1384,7 @@ for (iteration in 1:iterations) {
         pool.f2 <- NULL
         for (i in 1:group.size){
             other.word <- groups4[[class]][[2]][[i]]
-            if (lexicon4[[other.word]][[3]] != "BET") {
+            if (lexicon4[[other.word]][[3]] != "BAT") {
                 pool.f1 <- c(pool.f1, unlist(lexicon4[[other.word]][[4]]))
                 pool.f2 <- c(pool.f2, unlist(lexicon4[[other.word]][[5]]))
             }
@@ -1444,7 +1444,7 @@ for (iteration in 1:iterations) {
             f1.mean <- c(f1.mean, word.f1.mean)
             f2.mean <- c(f2.mean, word.f2.mean)
         }
-        vowelss <- rep_len(c("BAT", "BET"), lexicon.size)
+        vowelss <- rep_len(c("BART", "BAT"), lexicon.size)
         words <- seq(1, lexicon.size)
         time <- rep(iteration, lexicon.size)
         change.current <- data.frame("word" = words, time, "frequency" = now.frequency, "f1" = f1.mean, "f2" = f2.mean, "vowel" = vowelss)
@@ -1456,28 +1456,28 @@ for (iteration in 1:iterations) {
 ## Plotting
 
 ```{r plot-source-4, eval = FALSE}
-bat.f1.source <- NULL
+bart.f1.source <- NULL
 for (i in seq(1, lexicon.size, by = 2)) {
+    bart.f1.source <- c(bart.f1.source, unlist(source.lexicon4[[i]][[4]]))
+}
+bart.f2.source <- NULL
+for (i in seq(1, lexicon.size, by = 2)) {
+    bart.f2.source <- c(bart.f2.source, unlist(source.lexicon4[[i]][[5]]))
+}
+
+bat.f1.source <- NULL
+for (i in seq(2, lexicon.size, by = 2)) {
     bat.f1.source <- c(bat.f1.source, unlist(source.lexicon4[[i]][[4]]))
 }
 bat.f2.source <- NULL
-for (i in seq(1, lexicon.size, by = 2)) {
+for (i in seq(2, lexicon.size, by = 2)) {
     bat.f2.source <- c(bat.f2.source, unlist(source.lexicon4[[i]][[5]]))
 }
 
-bet.f1.source <- NULL
-for (i in seq(2, lexicon.size, by = 2)) {
-    bet.f1.source <- c(bet.f1.source, unlist(source.lexicon4[[i]][[4]]))
-}
-bet.f2.source <- NULL
-for (i in seq(2, lexicon.size, by = 2)) {
-    bet.f2.source <- c(bet.f2.source, unlist(source.lexicon4[[i]][[5]]))
-}
-
 vowels.source4 <- data.frame(
-    f1 = c(bat.f1.source, bet.f1.source),
-    f2 = c(bat.f2.source, bet.f2.source),
-    vowel = c(rep("BAT", times = length(bat.f1.source)), rep("BET", times = length(bet.f1.source)))
+    f1 = c(bart.f1.source, bat.f1.source),
+    f2 = c(bart.f2.source, bat.f2.source),
+    vowel = c(rep("BART", times = length(bart.f1.source)), rep("BAT", times = length(bat.f1.source)))
 )
 
 ggplot(vowels.source4, aes(f1, colour = vowel)) +
@@ -1496,28 +1496,28 @@ ggplot(vowels.source4, aes(f2, f1, colour = vowel)) +
 ```
 
 ```{r plot-final-4, eval = FALSE}
-bat.f1 <- NULL
+bart.f1 <- NULL
 for (i in seq(1, lexicon.size, by = 2)) {
+    bart.f1 <- c(bart.f1, unlist(lexicon4[[i]][[4]]))
+}
+bart.f2 <- NULL
+for (i in seq(1, lexicon.size, by = 2)) {
+    bart.f2 <- c(bart.f2, unlist(lexicon4[[i]][[5]]))
+}
+
+bat.f1 <- NULL
+for (i in seq(2, lexicon.size, by = 2)) {
     bat.f1 <- c(bat.f1, unlist(lexicon4[[i]][[4]]))
 }
 bat.f2 <- NULL
-for (i in seq(1, lexicon.size, by = 2)) {
+for (i in seq(2, lexicon.size, by = 2)) {
     bat.f2 <- c(bat.f2, unlist(lexicon4[[i]][[5]]))
 }
 
-bet.f1 <- NULL
-for (i in seq(2, lexicon.size, by = 2)) {
-    bet.f1 <- c(bet.f1, unlist(lexicon4[[i]][[4]]))
-}
-bet.f2 <- NULL
-for (i in seq(2, lexicon.size, by = 2)) {
-    bet.f2 <- c(bet.f2, unlist(lexicon4[[i]][[5]]))
-}
-
 vowels4 <- data.frame(
-    f1 = c(bat.f1, bet.f1),
-    f2 = c(bat.f2, bet.f2),
-    vowel = c(rep("BAT", times = length(bat.f1)), rep("BET", times = length(bet.f1)))
+    f1 = c(bart.f1, bat.f1),
+    f2 = c(bart.f2, bat.f2),
+    vowel = c(rep("BART", times = length(bart.f1)), rep("BAT", times = length(bat.f1)))
 )
 
 ggplot(vowels4, aes(f1, colour = vowel)) +
@@ -1574,7 +1574,7 @@ This is a modification of Simulation 3: now words have equally spaced frequency 
 createLexicon5 <- function(size, frequency, group.size) {
 
     word <- seq(1, size)
-    vowel <- rep(c("BAT", "BET", "BIT"), size)
+    vowel <- rep(c("BART", "BAT", "BET"), size)
     class <- sample(rep(1:(size/group.size), each = group.size))
 #    class <- c(rbind(sample(1:(size/group.size)), sample(1:(size/group.size))))
     cloud.f1 <- list()
@@ -1591,17 +1591,17 @@ createLexicon5 <- function(size, frequency, group.size) {
 ```
 
 ```{r populateLexicon5}
-populateLexicon5 <- function(lexicon, iterations, probs, bat.f1, bet.f1, bit.f1) {
+populateLexicon5 <- function(lexicon, iterations, probs, bart.f1, bat.f1, bet.f1) {
     for (i in 1:iterations) {
         item <- sample(seq(1, length(lexicon)), 1, prob = probs)
         cloud.size <- length(lexicon[[item]][[4]])
         if (cloud.size == 0) {
-            if (lexicon[[item]][[3]] == "BAT") {
+            if (lexicon[[item]][[3]] == "BART") {
+                f1 <- bart.f1
+            } else if (lexicon[[item]][[3]] == "BAT") {
                 f1 <- bat.f1
-            } else if (lexicon[[item]][[3]] == "BET") {
-                f1 <- bet.f1
             } else {
-                f1 <- bit.f1
+                f1 <- bet.f1
             }
             lexicon[[item]][[4]][[1]] <- produceFormants(f1)
         } else if (cloud.size == 1) {
@@ -1625,10 +1625,10 @@ group.size <- 10
 lexicon5 <- createLexicon5(lexicon.size, frequency, group.size)
 
 iterations <- 50000
-bat.f1 <- 6.5
-bet.f1 <- 5.5
-bit.f1 <- 4.5
-lexicon5 <- populateLexicon5(lexicon5, iterations, frequency, bat.f1, bet.f1, bit.f1)
+bart.f1 <- 6.5
+bat.f1 <- 5.5
+bet.f1 <- 4.5
+lexicon5 <- populateLexicon5(lexicon5, iterations, frequency, bart.f1, bat.f1, bet.f1)
 source.lexicon5 <- lexicon5
 
 groups5 <- list()
@@ -1659,12 +1659,12 @@ for (iteration in 1:iterations) {
 
     #### Produce the chosen word ####
 
-    if (lexicon5[[word]][[3]] == "BAT") {
+    if (lexicon5[[word]][[3]] == "BART") {
 
-        #### The chosen word is a BAT word ####
+        #### The chosen word is a BART word ####
 
         if (length(lexicon5[[word]][[4]]) == 0) {
-            lexicon5[[word]][[4]] <- list(produceFormants(bat.f1, bias))
+            lexicon5[[word]][[4]] <- list(produceFormants(bart.f1, bias))
         } else {
             target <- sample(1:length(lexicon5[[word]][[4]]), 1)
             outcome <- produceFormants(lexicon5[[word]][[4]][[target]], bias)
@@ -1677,7 +1677,7 @@ for (iteration in 1:iterations) {
         pool.e <- NULL
         for (i in 1:group.size){
             other.word <- groups5[[class]][[2]][[i]]
-            if (lexicon5[[other.word]][[3]] == "BET") {
+            if (lexicon5[[other.word]][[3]] == "BAT") {
                 pool.e <- c(pool.e, unlist(lexicon5[[other.word]][[4]]))
             }
         }
@@ -1711,12 +1711,12 @@ for (iteration in 1:iterations) {
                 }
             }
         }
-    } else if (lexicon5[[word]][[3]] == "BET") {
+    } else if (lexicon5[[word]][[3]] == "BAT") {
 
-        #### The chosen word is a BET word ####
+        #### The chosen word is a BAT word ####
 
         if (length(lexicon5[[word]][[4]]) == 0) {
-            lexicon5[[word]][[4]] <- list(produceFormants(bet.f1))
+            lexicon5[[word]][[4]] <- list(produceFormants(bat.f1))
         } else {
             target <- sample(1:length(lexicon5[[word]][[4]]), 1)
             outcome <- produceFormants(lexicon5[[word]][[4]][[target]])
@@ -1730,9 +1730,9 @@ for (iteration in 1:iterations) {
         pool.i <- NULL
         for (i in 1:group.size){
             other.word <- groups5[[class]][[2]][[i]]
-            if (lexicon5[[other.word]][[3]] == "BAT") {
+            if (lexicon5[[other.word]][[3]] == "BART") {
                 pool.a <- c(pool.a, unlist(lexicon5[[other.word]][[4]]))
-            } else if (lexicon5[[other.word]][[3]] == "BIT") {
+            } else if (lexicon5[[other.word]][[3]] == "BET") {
                 pool.i <- c(pool.i, unlist(lexicon5[[other.word]][[4]]))
             }
         }
@@ -1767,10 +1767,10 @@ for (iteration in 1:iterations) {
             }
         }
     } else {
-        #### The chosen word is a BIT word ####
+        #### The chosen word is a BET word ####
 
         if (length(lexicon5[[word]][[4]]) == 0) {
-            lexicon5[[word]][[4]] <- list(produceFormants(bit.f1))
+            lexicon5[[word]][[4]] <- list(produceFormants(bet.f1))
         } else {
             target <- sample(1:length(lexicon5[[word]][[4]]), 1)
             outcome <- produceFormants(lexicon5[[word]][[4]][[target]])
@@ -1783,7 +1783,7 @@ for (iteration in 1:iterations) {
         pool.e <- NULL
         for (i in 1:group.size){
             other.word <- groups5[[class]][[2]][[i]]
-            if (lexicon5[[other.word]][[3]] == "BET") {
+            if (lexicon5[[other.word]][[3]] == "BAT") {
                 pool.e <- c(pool.e, unlist(lexicon5[[other.word]][[4]]))
             }
         }
@@ -1832,7 +1832,7 @@ for (iteration in 1:iterations) {
             }
             f1.mean <- c(f1.mean, word.f1.mean)
         }
-        vowelss <- rep_len(c("BAT", "BET", "BIT"), lexicon.size)
+        vowelss <- rep_len(c("BART", "BAT", "BET"), lexicon.size)
         words <- seq(1, lexicon.size)
         time <- rep(iteration, lexicon.size)
         change.current <- data.frame("word" = words, time, "frequency" = now.frequency, "f1" = f1.mean, "vowel" = vowelss)
@@ -1869,7 +1869,7 @@ ggplot(aes(time, f1, colour = freq.bin)) +
 
 ## Simulation 1
 
-BAT and BET words, F1 only.
+BART and BAT words, F1 only.
 
 ```{r}
 change.scaled <- mutate(change, frequency = scale(frequency), time = scale(time))
@@ -1932,7 +1932,7 @@ compareML(simulation1.gam.null, simulation1.gam)
 
 ```{r simulation1-gam-plot}
 fvisgam(simulation1.gam, view = c("time","frequency"),
-        cond = list(vowel.ord = "BET"),
+        cond = list(vowel.ord = "BAT"),
         ylim = quantile(change2$frequency, c(0, 1))
         )
 ```
@@ -1967,14 +1967,14 @@ acf_resid(simulation2.gam.ar, split_pred="AR.start")
 
 ```{r simulation2-gam-ar-plot}
 fvisgam(simulation1.gam.ar, view = c("time","frequency"),
-        cond = list(vowel.ord = "BET"),
+        cond = list(vowel.ord = "BAT"),
         ylim = quantile(change2$frequency, c(0, 1))
         )
 ```
 
 ## Simulation 2
 
-BAT, BET and BIT words, F1 and F2
+BART, BAT and BET words, F1 and F2
 
 ```{r}
 simulation2.lm <- lmer(
@@ -2048,7 +2048,7 @@ compareML(simulation2.gam.null, simulation2.gam)
 
 ```{r simulation2-gam-plot}
 fvisgam(simulation2.gam, view = c("time","frequency"),
-        cond = list(vowel.ord = "BET"),
+        cond = list(vowel.ord = "BAT"),
         ylim = quantile(change2$frequency, c(0, 1))
         )
 ```
@@ -2083,14 +2083,14 @@ acf_resid(simulation2.gam.ar, split_pred="AR.start")
 
 ```{r simulation2-gam-ar-plot}
 fvisgam(simulation2.gam.ar, view = c("time","frequency"),
-        cond = list(vowel.ord = "BET"),
+        cond = list(vowel.ord = "BAT"),
         ylim = quantile(change2$frequency, c(0.1, 0.9))
         )
 ```
 
 ## Simulation 3
 
-BAT, BET and BIT words, F1 only.
+BART, BAT and BET words, F1 only.
 
 ```{r}
 simulation3.lm <- lmer(
@@ -2164,7 +2164,7 @@ compareML(simulation3.gam.null, simulation3.gam)
 
 ```{r simulation3-gam-plot}
 fvisgam(simulation3.gam, view = c("time","frequency"),
-        cond = list(vowel.ord = "BIT"),
+        cond = list(vowel.ord = "BET"),
         ylim = quantile(change3$frequency, c(0, 1))
         )
 ```
@@ -2199,19 +2199,19 @@ acf_resid(simulation3.gam.ar, split_pred="AR.start")
 
 ```{r simulation3-gam-ar-plot}
 fvisgam(simulation3.gam.ar, view = c("time","frequency"),
-        cond = list(vowel.ord = "BET"),
+        cond = list(vowel.ord = "BAT"),
         ylim = quantile(change3$frequency, c(0, 1))
         )
 ```
 
 ```{r}
-plot_smooth(simulation2.gam.ar, view="time", cond=list(frequency=10, vowel.ord = "BET"),
+plot_smooth(simulation2.gam.ar, view="time", cond=list(frequency=10, vowel.ord = "BAT"),
             rug=F, col="red")
-plot_smooth(simulation2.gam.ar, view="time", cond=list(frequency=40, vowel.ord = "BET"),
+plot_smooth(simulation2.gam.ar, view="time", cond=list(frequency=40, vowel.ord = "BAT"),
             rug=F, col="blue", add=T)
-plot_smooth(simulation2.gam.ar, view="time", cond=list(frequency=80, vowel.ord = "BET"),
+plot_smooth(simulation2.gam.ar, view="time", cond=list(frequency=80, vowel.ord = "BAT"),
             rug=F, col="green", add=T)
-#plot_smooth(simulation3.gam.ar, view="time", cond=list(frequency=120, vowel.ord = "BET"),
+#plot_smooth(simulation3.gam.ar, view="time", cond=list(frequency=120, vowel.ord = "BAT"),
 #            rug=F, col="yellow", add=T)
 ```
 
@@ -2294,7 +2294,7 @@ compareML(simulation5.gam.null, simulation5.gam)
 
 ```{r simulation5-gam-plot}
 fvisgam(simulation5.gam, view = c("time","frequency"),
-        cond = list(vowel.ord = "BIT"),
+        cond = list(vowel.ord = "BET"),
         ylim = quantile(change5$frequency, c(0, 1))
         )
 ```
@@ -2329,6 +2329,10 @@ acf_resid(simulation5.gam.ar, split_pred="AR.start")
 
 ```{r simulation5-gam-ar-plot}
 fvisgam(simulation5.gam.ar, view = c("time","frequency"),
+        cond = list(vowel.ord = "BART"),
+        ylim = quantile(change5$frequency, c(0, 1))
+        )
+fvisgam(simulation5.gam.ar, view = c("time","frequency"),
         cond = list(vowel.ord = "BAT"),
         ylim = quantile(change5$frequency, c(0, 1))
         )
@@ -2336,10 +2340,15 @@ fvisgam(simulation5.gam.ar, view = c("time","frequency"),
         cond = list(vowel.ord = "BET"),
         ylim = quantile(change5$frequency, c(0, 1))
         )
-fvisgam(simulation5.gam.ar, view = c("time","frequency"),
-        cond = list(vowel.ord = "BIT"),
-        ylim = quantile(change5$frequency, c(0, 1))
-        )
+```
+
+```{r change5-smooths-BAT}
+plot_smooth(simulation5.gam.ar, view="time", cond=list(frequency=10, vowel.ord = "BAT"),
+            rug=F, col="red")
+plot_smooth(simulation5.gam.ar, view="time", cond=list(frequency=40, vowel.ord = "BAT"),
+            rug=F, col="blue", add=T)
+plot_smooth(simulation5.gam.ar, view="time", cond=list(frequency=80, vowel.ord = "BAT"),
+            rug=F, col="green", add=T)
 ```
 
 ```{r change5-smooths-BET}
@@ -2348,15 +2357,6 @@ plot_smooth(simulation5.gam.ar, view="time", cond=list(frequency=10, vowel.ord =
 plot_smooth(simulation5.gam.ar, view="time", cond=list(frequency=40, vowel.ord = "BET"),
             rug=F, col="blue", add=T)
 plot_smooth(simulation5.gam.ar, view="time", cond=list(frequency=80, vowel.ord = "BET"),
-            rug=F, col="green", add=T)
-```
-
-```{r change5-smooths-BIT}
-plot_smooth(simulation5.gam.ar, view="time", cond=list(frequency=10, vowel.ord = "BIT"),
-            rug=F, col="red")
-plot_smooth(simulation5.gam.ar, view="time", cond=list(frequency=40, vowel.ord = "BIT"),
-            rug=F, col="blue", add=T)
-plot_smooth(simulation5.gam.ar, view="time", cond=list(frequency=80, vowel.ord = "BIT"),
             rug=F, col="green", add=T)
 ```
 
