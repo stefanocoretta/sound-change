@@ -39,7 +39,7 @@ zipfDistr <- function(size) {
 }
 ```
 
-We then need a function for generating values for the BART and BAT vowels in the lexicon. Since the main change affected the second formant (F1), the function will return F1 values (in Barks). The function takes a `target` value, it applies random noise and a `bias` (if specified; the default is `0`). A noise window of 0.5 (between -0.25 and 0.25) is used for the application of the production noise.
+We then need a function for generating values for the BART and BAT vowels in the lexicon. Since the main change affected the second formant (F1), the function will return F1 values (in Bark). The function takes a `target` value, it applies random noise and a `bias` (if specified; the default is `0`). A noise window of 0.5 (between -0.25 and 0.25) is used for the application of the production noise.
 
 ```{r produceFormants}
 produceFormants <- function(target, bias = 0) {
@@ -78,7 +78,7 @@ createLexicon <- function(size, frequency, group.size) {
 }
 ```
 
-The function `populateLexicon()` adds formant values to the lexical items in the lexicon, following a normal distribution. It follows the principles outlined in @pierrehumbert2001 and @wedel2007. The chosen standard values for F1 are 6.5 Barks for BART and 5 for BAT.
+The function `populateLexicon()` adds formant values to the lexical items in the lexicon, following a normal distribution. It follows the principles outlined in @pierrehumbert2001 and @wedel2007. The chosen standard values for F1 are 6.5 Bark for BART and 5 for BAT.
 
 ```{r populateLexicon}
 populateLexicon <- function(lexicon, iterations, probs, bart.f1, bat.f1) {
@@ -351,7 +351,7 @@ ggplot(change.bin, aes(time, f1, colour = freq.bin)) +
     facet_grid(. ~ vowel) +
     geom_smooth(se = FALSE) +
     xlab("time (iterations)") +
-    ylab("F1 (Barks)") +
+    ylab("F1 (Bark)") +
     scale_colour_discrete(name = "Frequency bin")
 ```
 
@@ -815,7 +815,7 @@ ggplot(change2.bin, aes(time, f1, colour = freq.bin)) +
     facet_grid(. ~ vowel) +
     geom_smooth(se = FALSE) +
     xlab("time (iterations)") +
-    ylab("F1 (Barks)") +
+    ylab("F1 (Bark)") +
     scale_colour_discrete(name = "Frequency bin")
 ```
 
@@ -824,7 +824,7 @@ ggplot(change2.bin, aes(time, f2, colour = freq.bin)) +
     facet_grid(. ~ vowel) +
     geom_smooth(se = FALSE) +
     xlab("time (iterations)") +
-    ylab("F2 (Barks)") +
+    ylab("F2 (Bark)") +
     scale_colour_discrete(name = "Frequency bin")
 ```
 
@@ -1177,7 +1177,7 @@ ggplot(change3.bin, aes(time, f1, colour = freq.bin)) +
     facet_grid(. ~ vowel) +
     geom_smooth(se = FALSE) +
     xlab("time (iterations)") +
-    ylab("F1 (Barks)") +
+    ylab("F1 (Bark)") +
     scale_colour_discrete(name = "Frequency bin") +
     labs(title = "Change of mean F1 through time in high and low frequency words")
 ```
@@ -1552,7 +1552,7 @@ ggplot(change4.bin, aes(time, f1, colour = freq.bin)) +
     facet_grid(. ~ vowel) +
     geom_smooth(se = FALSE) +
     xlab("time (iterations)") +
-    ylab("F1 (Barks)") +
+    ylab("F1 (Bark)") +
     scale_colour_discrete(name = "Frequency bin") +
     labs(title = "Change of mean F1 through time in high and low frequency words")
 ```
@@ -1562,7 +1562,7 @@ ggplot(change4.bin, aes(time, f2, colour = freq.bin)) +
     facet_grid(. ~ vowel) +
     geom_smooth(se = FALSE) +
     xlab("time (iterations)") +
-    ylab("F2 (Barks)") +
+    ylab("F2 (Bark)") +
     scale_colour_discrete(name = "Frequency bin") +
     labs(title = "Change of mean F1 through time in high and low frequency words")
 ```
@@ -1860,9 +1860,9 @@ change5.bin <- mutate(change5,
 filter(change5.bin, freq.bin != "medium") %>%
 ggplot(aes(time, f1, colour = freq.bin)) +
     facet_grid(. ~ vowel) +
-    geom_smooth(method = "lm") +
+    geom_smooth(se = FALSE) +
     xlab("time (iterations)") +
-    ylab("F1 (Barks)") +
+    ylab("F1 (Bark)") +
     scale_colour_discrete(name = "Frequency bin")
 ```
 
