@@ -451,7 +451,7 @@ change2 <- data.frame("word" = numeric(),
 
 ```{r vowel-shift2}
 iterations <- 200000
-f1.bias <- -0.35
+f1.bias <- -0.3
 f2.bias <- 0.05
 
 for (iteration in 1:iterations) {
@@ -916,7 +916,7 @@ change3 <- data.frame("word" = numeric(),
 
 ```{r vowel-shift-3}
 iterations <- 200000
-bias <- -0.2
+bias <- -0.3
 
 for (iteration in 1:iterations) {
     word <- sample(1:lexicon.size, 1, prob = frequency)
@@ -1273,7 +1273,7 @@ change4 <- data.frame("word" = numeric(),
 
 ```{r vowel-shift-4}
 iterations <- 200000
-f1.bias <- -0.5
+f1.bias <- -0.3
 f2.bias <- 0.05
 
 for (iteration in 1:iterations) {
@@ -1653,7 +1653,7 @@ change5 <- data.frame("word" = numeric(),
 
 ```{r vowel-shift-5}
 iterations <- 200000
-bias <- -0.2
+bias <- -0.3
 
 for (iteration in 1:iterations) {
     word <- sample(1:lexicon.size, 1, prob = frequency)
