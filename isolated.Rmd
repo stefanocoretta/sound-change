@@ -1,0 +1,293 @@
+---
+title: "Isolated sound change"
+author: "Stefano Coretta"
+date: "18/04/2017"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(zipfR)
+library(ggplot2)
+theme_set(theme_bw())
+library(dplyr)
+library(lme4)
+library(afex)
+library(effects)
+library(mgcv)
+library(itsadug)
+```
+
+# General functions
+
+The frequency distribution is produced by the following function, `zipfDistr()`. The distribution is a random sample from a Zipfian distribution (it uses the `zipfR` package).
+
+```{r zipfDistr}
+zipfDistr <- function(size) {
+    zipf.model <- lnre("zm", alpha = 2/7, B = 0.1)
+    zipf.sample <- rlnre(zipf.model, n = size)
+    zipf.distr <- sort(as.numeric(as.character(zipf.sample)))
+    return(zipf.distr)
+}
+```
+
+We then need a function for generating values for the BART and BAT vowels in the lexicon. Since the main change affected the second formant (F1), the function will return F1 values (in Bark). The function takes a `target` value, it applies random noise and a `bias` (if specified; the default is `0`). A noise window of 0.5 (between -0.25 and 0.25) is used for the application of the production noise.
+
+```{r produceFormants}
+produceFormants <- function(target, bias = 0) {
+    noise <- sample(seq(-50, 50, by = 10), 1)
+    outcome <- target + noise + bias
+    return(outcome)
+}
+```
+
+# /ʊ/-fronting simulation
+
+## Functions
+
+```{r createLexicon}
+createLexicon <- function(size, frequency) {
+
+    word <- seq(1, size)
+    cloud <- list()
+
+    lexicon <- list()
+
+    for (i in 1:size) {
+        lexicon[[i]] <- list(word[i], frequency[i], cloud)
+    }
+
+    return(lexicon)
+}
+```
+
+```{r populateLexicon}
+populateLexicon <- function(lexicon, iterations, frequency, f2) {
+    for (i in 1:iterations) {
+        item <- sample(seq(1, length(lexicon)), 1, prob = frequency)
+        cloud.size <- length(lexicon[[item]][[3]])
+            if (cloud.size == 0) {
+                lexicon[[item]][[3]][[1]] <- produceFormants(f2)
+            } else if (cloud.size == 1) {
+                target <- lexicon[[item]][[3]][[1]]
+                lexicon[[item]][[3]][[cloud.size + 1]] <- produceFormants(target)
+            } else {
+                target <- sample(unlist(lexicon[[item]][[3]]), 1)
+                lexicon[[item]][[3]][[cloud.size + 1]] <- produceFormants(target)
+            }
+    }
+    return(lexicon)
+}
+```
+
+## Simulate change
+
+```{r lexicon}
+set.seed(7777)
+
+lexicon.size <- 1000
+frequency <- zipfDistr(lexicon.size)
+lexicon <- createLexicon(lexicon.size, frequency)
+
+iterations <- 50000
+f2 <- 1000
+lexicon <- populateLexicon(lexicon, iterations, frequency, f2)
+source.lexicon <- lexicon
+
+change <- data.frame("word" = numeric(),
+                     "time" = numeric(),
+                     "frequency" = numeric(),
+                     "f1" = numeric()
+                     )
+```
+
+```{r u-fronting}
+iterations <- 200000
+bias <- 100
+
+for (iteration in 1:iterations) {
+    word <- sample(1:lexicon.size, 1, prob = frequency)
+
+    #### Produce the chosen word ####
+
+    if (length(lexicon[[word]][[3]]) == 0) {
+        lexicon[[word]][[3]] <- list(produceFormants(f2, bias))
+    } else {
+        target <- sample(1:length(lexicon[[word]][[3]]), 1)
+        outcome <- produceFormants(lexicon[[word]][[3]][[target]], bias)
+        lexicon[[word]][[3]][[length(lexicon[[word]][[3]]) + 1]] <- outcome
+    }
+    
+    #### Categorisation process ####
+    # encoding.prob <- lexicon[[word]][[2]] /
+    #                 max(frequency)
+    # encode <- sample(c("yes", "no"),
+    #                  1,
+    #                  prob = c(encoding.prob,
+    #                           1 - encoding.prob
+    #                  )
+    # )
+    # 
+    # #### Encoding function ####
+    # if (encode == "no") {
+    #         if (length(lexicon[[word]][[3]]) != 0) {
+    #             for (j in length(lexicon[[word]][[3]]):1) {
+    #                 if (lexicon[[word]][[3]][[j]] == outcome) {
+    #                     if (length(lexicon[[word]][[3]]) == 1) {
+    #                         lexicon[[word]][[3]] <- list()
+    #                     } else {
+    #                         lexicon[[word]][[3]][[j]] <- NULL
+    #                     }
+    #                 }
+    #             }
+    #         }
+    # }
+
+
+    if (iteration %% 1000 == 0) {
+        current.frequency <- NULL
+        f2.mean <- NULL
+        for (word in 1:lexicon.size) {
+            word.frequency <- lexicon[[word]][[2]]
+            current.frequency <- c(current.frequency, word.frequency)
+            if (is.null(unlist(lexicon[[word]][[3]])) == FALSE) {
+                word.f2.mean <- mean(unlist(lexicon[[word]][[3]]))
+            } else {
+                word.f2.mean <- NA
+            }
+            f2.mean <- c(f2.mean, word.f2.mean)
+        }
+        words <- seq(1, lexicon.size)
+        time <- rep(iteration, lexicon.size)
+        current.change <- data.frame("word" = words, time, "frequency" = current.frequency, "f2" = f2.mean)
+        change <- rbind(change, current.change)
+    }
+}
+```
+
+## Plotting
+
+```{r freq-bin}
+change.bin <- mutate(change,
+                 freq.bin = ifelse(frequency < max(frequency)/2,
+                                   "low",
+                                   "high"
+                                   )
+                 )
+```
+
+```{r freq-plot}
+change.bin %>%
+ggplot(aes(time, f2, colour = freq.bin)) +
+    geom_smooth(se = FALSE) +
+    xlab("time (iterations)") +
+    ylab("F2 (Hertz)") +
+    scale_colour_discrete(name = "Frequency bin")
+```
+
+## LMER
+
+```{r lmer}
+change.scaled <- change %>%
+    mutate(frequency = scale(frequency),
+           time = scale(time))
+
+u.fronting.lmer <- lmer(
+    f2 ~
+        time *
+        frequency +
+        (1|word),
+    data = change.scaled,
+    REML = FALSE
+)
+
+summary(u.fronting.lmer)
+
+u.fronting.lmer.null <- lmer(
+    f2 ~
+        time +
+        frequency +
+        (1|word),
+    data = change.scaled,
+    REML = FALSE
+)
+
+anova(u.fronting.lmer.null, u.fronting.lmer)
+```
+
+## GAMM
+
+```{r change-ordered}
+change$word.ord <- as.ordered(change$word)
+contrasts(change$word.ord) <- "contr.treatment"
+change <- change %>%
+    na.omit() %>%
+    arrange(word, time) %>%
+    start_event(column = "time", event = c("word"))
+```
+
+```{r gamm}
+u.fronting.gamm <- bam(
+    f2 ~
+        frequency +
+        s(time, bs = "cr") +
+        s(time, by = frequency, bs = "cr"),
+    data = change,
+    method = "ML"
+)
+
+summary(u.fronting.gamm)
+
+u.fronting.gamm.null <- bam(
+    f2 ~
+        frequency +
+        s(time, bs = "cr"),
+    data = change,
+    method = "ML"
+)
+
+compareML(u.fronting.gamm.null, u.fronting.gamm)
+```
+
+```{r gamm-acr}
+acf_plot(resid(u.fronting.gamm), split_by=list(change$word.ord))
+```
+
+```{r gamm-ar}
+rho <- start_value_rho(u.fronting.gamm)
+
+u.fronting.gamm <- bam(
+    f2 ~
+        frequency +
+        s(time, bs = "cr") +
+        s(time, by = frequency, bs = "cr"),
+    data = change,
+    method = "fREML",
+    rho = rho,
+    AR.start = change$start.event
+)
+
+summary(u.fronting.gamm)
+
+u.fronting.gamm.null <- bam(
+    f2 ~
+        frequency +
+        s(time, bs = "cr"),
+    data = change,
+    method = "fREML",
+    rho = rho,
+    AR.start = change$start.event
+)
+
+compareML(u.fronting.gamm.null, u.fronting.gamm)
+```
+
+```{r gamm-ar-acr}
+acf_resid(u.fronting.gamm.null, split_pred="AR.start")
+```
+
+```{r simulation2-gam-ar-plot}
+fvisgam(u.fronting.gamm.null, view = c("time", "frequency"),
+        ylim = quantile(change$frequency, c(0, 1))
+        )
+```
