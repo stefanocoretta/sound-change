@@ -1175,10 +1175,11 @@ change3.bin <- mutate(change3,
 ```{r freq-plot}
 ggplot(change3.bin, aes(time, f1, colour = freq.bin)) +
     facet_grid(. ~ vowel) +
-    geom_smooth(method = "lm") +
+    geom_smooth(se = FALSE) +
     xlab("time (iterations)") +
     ylab("F1 (Barks)") +
-    scale_colour_discrete(name = "Frequency bin")
+    scale_colour_discrete(name = "Frequency bin") +
+    labs(title = "Change of mean F1 through time in high and low frequency words")
 ```
 
 # Simulation 4
@@ -1271,7 +1272,7 @@ change4 <- data.frame("word" = numeric(),
 ```
 
 ```{r vowel-shift-4}
-iterations <- 100000
+iterations <- 200000
 f1.bias <- -0.5
 f2.bias <- 0.05
 
