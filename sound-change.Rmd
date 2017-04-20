@@ -1543,7 +1543,8 @@ change4.bin <- mutate(change4,
                  freq.bin = ifelse(frequency < max(frequency)/2,
                                    "low",
                                    "high"
-                                   )
+                                   ),
+                 vowel = ifelse(vowel == "BAT", "a", "æ")
                  )
 ```
 
@@ -2124,7 +2125,7 @@ anova(simulation3.lm.null, simulation3.lm)
 ```{r change3}
 change3$word.ord <- as.ordered(change3$word)
 change3$vowel.ord <- as.ordered(change3$vowel)
-contrasts(change3$vowel.ord) <- "contr.treatment"
+contrasts(change3$word.ord) <- "contr.treatment"
 contrasts(change3$vowel.ord) <- "contr.treatment"
 change3 <- change3 %>%
 #    na.omit() %>%
@@ -2254,7 +2255,7 @@ anova(simulation5.lm.null, simulation5.lm)
 ```{r change5}
 change5$word.ord <- as.ordered(change5$word)
 change5$vowel.ord <- as.ordered(change5$vowel)
-contrasts(change5$vowel.ord) <- "contr.treatment"
+contrasts(change5$word.ord) <- "contr.treatment"
 contrasts(change5$vowel.ord) <- "contr.treatment"
 change5 <- change5 %>%
 #    na.omit() %>%
@@ -2322,6 +2323,21 @@ simulation5.gam.ar <- bam(
 )
 
 summary(simulation5.gam.ar)
+
+simulation5.gam.ar.null <- bam(
+    f1 ~
+        frequency +
+        vowel.ord +
+        s(time, bs = "cr") +
+        s(time, by = frequency, bs = "cr") +
+        s(time, by = vowel.ord, bs = "cr"),
+    data = change5,
+    method = "fREML",
+    rho = r1,
+    AR.start = change5$start.event
+)
+
+compareML(simulation5.gam.ar.null, simulation5.gam.ar)
 ```
 
 ```{r simulation5-gam-ar-acr}
