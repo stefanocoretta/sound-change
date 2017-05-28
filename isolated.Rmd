@@ -83,7 +83,7 @@ populateLexicon <- function(lexicon, iterations, frequency, f2) {
 ## Simulate change
 
 ```{r lexicon}
-set.seed(7777)
+set.seed(888)
 
 lexicon.size <- 1000
 frequency <- zipfDistr(lexicon.size)
@@ -91,7 +91,7 @@ lexicon <- createLexicon(lexicon.size, frequency)
 
 iterations <- 50000
 f2 <- 1000
-lexicon <- populateLexicon(lexicon, iterations, frequency, f2)
+#lexicon <- populateLexicon(lexicon, iterations, frequency, f2)
 source.lexicon <- lexicon
 
 change <- data.frame("word" = numeric(),
@@ -291,3 +291,5 @@ fvisgam(u.fronting.gamm.null, view = c("time", "frequency"),
         ylim = quantile(change$frequency, c(0, 1))
         )
 ```
+
+
