@@ -66,7 +66,7 @@ simulateGlott <- function(lexicon, lexicon.size, frequency, iterations) {
 # Simulation
 
 ```{r}
-set.seed(888)
+set.seed(777)
 
 lexicon.size <- 1000
 lexicon.frequency <- zipfDistr(lexicon.size)
@@ -74,5 +74,18 @@ lexicon <- createLexicon(lexicon.size, lexicon.frequency)
 
 iterations <- 10000
 lexicon.change <- simulateGlott(lexicon, lexicon.size, lexicon.frequency, iterations)
+
+lexicon.change <- lexicon.change %>%
+    mutate(
+        freq.bin = ifelse(frequency < max(frequency)/2,"low","high")
+    )
+```
+
+## Plotting
+
+```{r}
+lexicon.change %>%
+    ggplot(aes(iteration, glot.prob, colour = freq.bin)) +
+    geom_smooth()
 ```
 
