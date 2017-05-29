@@ -56,7 +56,7 @@ simulateGlott <- function(lexicon, lexicon.size, frequency, iterations) {
             (previous.prob / (exemplars + 1) )
         lexicon$exemplars[word] <- exemplars + 1
         
-        if (iteration %% 1000 == 0) {
+        if (iteration %% 10 == 0) {
             lexicon.change <- rbind(lexicon.change, cbind(iteration, lexicon))
         }
     }
@@ -71,10 +71,10 @@ simulateGlott <- function(lexicon, lexicon.size, frequency, iterations) {
 set.seed(777)
 
 lexicon.size <- 100
-lexicon.frequency <- zipfDistr(lexicon.size) # try with seq()
+lexicon.frequency <- seq(1:lexicon.size) # try with seq()
 lexicon <- createLexicon(lexicon.size, lexicon.frequency)
 
-iterations <- 50000
+iterations <- 5000
 lexicon.change <- simulateGlott(lexicon, lexicon.size, lexicon.frequency, iterations)
 
 lexicon.change <- lexicon.change %>%
