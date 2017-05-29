@@ -138,6 +138,11 @@ glot.gam.ar <- bam(
 ```
 
 ```{r}
+acf_resid(glot.gam.ar, split_pred="AR.start")
+```
+
+
+```{r}
 fvisgam(glot.gam.ar, view = c("iteration","frequency"),
         ylim = quantile(lexicon.change$frequency, c(0, 1))
         )
