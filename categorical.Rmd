@@ -12,7 +12,7 @@ theme_set(theme_bw())
 library(zipfR)
 ```
 
-# General functions
+# Initialise
 
 The frequency distribution is produced by the following function, `zipfDistr()`. The distribution is a random sample from a Zipfian distribution (it uses the `zipfR` package).
 
@@ -24,3 +24,59 @@ zipfDistr <- function(size) {
     return(zipf.distr)
 }
 ```
+
+```{r createLexicon}
+createLexicon <- function(size, frequency) {
+    word <- seq(1:size)
+    glot.prob <- 0
+    exemplars <- 1
+    lexicon <- tibble(word, frequency, glot.prob, exemplars)
+    return(lexicon)
+}
+```
+
+```{r simulateGlott}
+simulateGlott <- function(lexicon, lexicon.size, frequency, iterations) {
+    lexicon.change <- tibble("iteration" = numeric(),
+                             "word" = numeric(),
+                             "frequency" = numeric(),
+                             "glot.prob" = numeric(),
+                             "exemplars" = numeric()
+                             )
+    for (iteration in 1:iterations) {
+        word <- sample(1:lexicon.size, 1, prob = frequency)
+        previous.prob <- lexicon$glot.prob[word]
+        exemplars <- lexicon$exemplars[word]
+        is.glottalised <- sample(c(TRUE, FALSE), 1, prob = c(0.5, 0.5))
+        if (is.glottalised == TRUE) {
+            lexicon$glot.prob[word] <- previous.prob +
+                (1 / (exemplars + 1) ) -
+                (previous.prob / (exemplars + 1) )
+        } else {
+            lexicon$glot.prob[word] <- previous.prob -
+                (previous.prob / (exemplars + 1) )
+        }
+        lexicon$exemplars[word] <- exemplars + 1
+        
+        if (iteration %% 1000 == 0) {
+            lexicon.change <- rbind(lexicon.change, cbind(iteration, lexicon))
+        }
+    }
+    return(lexicon.change)
+}
+```
+
+
+# Simulation
+
+```{r}
+set.seed(888)
+
+lexicon.size <- 1000
+lexicon.frequency <- zipfDistr(lexicon.size)
+lexicon <- createLexicon(lexicon.size, lexicon.frequency)
+
+iterations <- 10000
+lexicon.change <- simulateGlott(lexicon, lexicon.size, lexicon.frequency, iterations)
+```
+
