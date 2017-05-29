@@ -1893,7 +1893,7 @@ summary(simulation1.lm)
 ```{r change}
 change$word.ord <- as.ordered(change$word)
 change$vowel.ord <- as.ordered(change$vowel)
-contrasts(change$vowel.ord) <- "contr.treatment"
+contrasts(change$word.ord) <- "contr.treatment"
 contrasts(change$vowel.ord) <- "contr.treatment"
 change <- change %>%
     na.omit() %>%
