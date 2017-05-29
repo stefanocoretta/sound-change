@@ -47,15 +47,11 @@ simulateGlott <- function(lexicon, lexicon.size, frequency, iterations) {
         word <- sample(1:lexicon.size, 1, prob = frequency)
         previous.prob <- lexicon$glot.prob[word]
         exemplars <- lexicon$exemplars[word]
-        is.glottalised <- sample(c(TRUE, FALSE), 1, prob = c(0.5, 0.5))
-        if (is.glottalised == TRUE) {
-            lexicon$glot.prob[word] <- previous.prob +
-                (1 / (exemplars + 1) ) -
-                (previous.prob / (exemplars + 1) )
-        } else {
-            lexicon$glot.prob[word] <- previous.prob -
-                (previous.prob / (exemplars + 1) )
-        }
+        is.glottalised <- sample(c(1, 0), 1, prob = c(0.5, 0.5))
+
+        lexicon$glot.prob[word] <- previous.prob +
+            (is.glottalised / (exemplars + 1) ) -
+            (previous.prob / (exemplars + 1) )
         lexicon$exemplars[word] <- exemplars + 1
         
         if (iteration %% 1000 == 0) {
