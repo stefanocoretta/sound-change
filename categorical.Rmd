@@ -69,7 +69,7 @@ simulateGlott <- function(lexicon, lexicon.size, frequency, iterations) {
 set.seed(777)
 
 lexicon.size <- 1000
-lexicon.frequency <- zipfDistr(lexicon.size)
+lexicon.frequency <- zipfDistr(lexicon.size) # try with seq()
 lexicon <- createLexicon(lexicon.size, lexicon.frequency)
 
 iterations <- 10000
