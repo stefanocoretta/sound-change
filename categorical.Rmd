@@ -135,6 +135,21 @@ glot.gam.ar <- bam(
     rho = r1,
     AR.start = lexicon.change$start.event
 )
+
+summary(glot.gam.ar)
+
+glot.gam.ar.null <- bam(
+    glot.prob ~
+#        frequency +
+        s(iteration, bs = "cr"),
+#        s(iteration, by = frequency, bs = "cr"),
+    data = lexicon.change,
+    method = "fREML",
+    rho = r1,
+    AR.start = lexicon.change$start.event
+)
+
+compareML(glot.gam.ar, glot.gam.ar.null)
 ```
 
 ```{r}
