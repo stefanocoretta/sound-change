@@ -61,7 +61,9 @@ simulateGlott <- function(lexicon, lexicon.size, frequency, iterations) {
             (previous.prob / (exemplars + 1) )
         lexicon$exemplars[word] <- exemplars + 1
         
-        if (iteration %% 10 == 0) {
+        plot.frequency <- lexicon.size * iterations / 50000
+        
+        if (iteration %% plot.frequency == 0) {
             lexicon.change <- rbind(lexicon.change, cbind(iteration, lexicon))
         }
     }
