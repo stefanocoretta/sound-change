@@ -124,9 +124,8 @@ lexicon <- createLexicon(lexicon.size, frequency, group.size)
 iterations <- 50000
 bart.f1 <- 6.5
 bat.f1 <- 5.5
-system.time(
 lexicon <- populateLexicon(lexicon, iterations, frequency, bart.f1, bat.f1)
-)
+
 source.lexicon <- lexicon
 
 groups <- list()
