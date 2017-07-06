@@ -42,7 +42,7 @@ We then need a function for generating values for the BART and BAT vowels in the
 
 ```{r produceFormants}
 produceFormants <- function(target, bias = 0) {
-    noise <- sample(seq(-0.2, 0.2, by = 0.1), 1)
+    noise <- sample(seq(-0.2, 0.2, by = 0.05), 1)
     outcome <- target + noise + bias
     return(outcome)
 }
