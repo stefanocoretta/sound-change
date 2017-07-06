@@ -48,7 +48,7 @@ produceFormants <- function(target, bias = 0) {
 }
 ```
 
-# Simulation 1: BART, BAT, F1
+# Simulation 1: BART, BAT, F1, step-wise frequency
 
 The first simulation models the effects of an enrouching category affected by a bias on the category towards which the former is moving. In our case, the encrouching category is the the BART vowel, while the other category is the BAT vowel.
 
