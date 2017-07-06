@@ -1,0 +1,93 @@
+---
+title: "Simulation of sound change"
+author: "Stefano Coretta"
+date: "05/07/2017"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(zipfR)
+library(tidyverse)
+theme_set(theme_bw())
+library(lme4)
+library(effects)
+library(itsadug)
+```
+
+# Functions
+
+```{r produce-formants}
+produce_formants <- function(target, bias = 0) {
+    noise <- sample(seq(-0.2, 0.2, by = 0.05), 1)
+    outcome <- target + noise + bias
+    return(outcome)
+}
+```
+
+```{r}
+create_lexicon <- function(lexicon_size, vowels, group_size, formants) {
+    lexicon <- tibble(
+        word = 1:lexicon_size,
+        vowel = rep(vowels, len = lexicon_size),
+        class = sample(rep(1:(lexicon_size/group_size), each = group_size,
+                           len = lexicon_size)),
+        frequency = rep(1:lexicon_size, each = length(vowels), len = lexicon_size),
+        f1 = rep(as.list(formants), len = lexicon_size)
+    )
+    
+    return(lexicon)
+}
+```
+
+```{r resample}
+resample <- function(x) {
+    if (length(x) == 1) {
+        return(x)
+    } else {
+        sample(x, 1)
+    }
+}
+```
+
+
+```{r populate-lexicon}
+populate_lexicon <- function(lexicon) {
+    lexicon_size <- nrow(lexicon)
+    lexicon_frequency <- lexicon$frequency
+    lexicon_f1 <- lexicon$f1
+    for (i in 1:50000) {
+        item <- sample(1:lexicon_size, 1, prob = lexicon_frequency)
+        target <- resample(unlist(lexicon_f1[[item]]))
+        output <- produce_formants(target)
+        lexicon_f1[[item]][[length(lexicon_f1[[item]]) + 1]] <- output
+    }
+    lexicon$f1 <- lexicon_f1
+    return(lexicon)
+}
+```
+
+```{r sound-shift}
+sound_shift <- function(lexicon, iterations) {
+    
+}
+```
+
+```{r shift}
+system.time(
+    lexicon <- create_lexicon(100, c("BART", "BAT"), 5, c(6.5, 5.5)) %>%
+        populate_lexicon()
+)
+
+unnest(lexicon, f1) %>%
+    ggplot(aes(f1, colour = vowel)) +
+    geom_density()
+
+group_by(lexicon, word) %>%
+    mutate(f1_mean = mean(unlist(f1))) %>%
+    ungroup() %>%
+    ggplot(aes(f1_mean, colour = vowel)) + geom_density()
+```
+
+
+
