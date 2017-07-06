@@ -278,7 +278,7 @@ for (iteration in 1:iterations) {
             }
             f1.mean <- c(f1.mean, word.f1.mean)
         }
-        vowelss <- rep(c("BART", "BAT"), lexicon.size/2)
+        vowelss <- rep(c("BART", "BAT"), len = lexicon.size)
         words <- seq(1, lexicon.size)
         time <- rep(iteration, lexicon.size)
         change.current <- data.frame("word" = words, time, "frequency" = now.frequency, "f1" = f1.mean, "vowel" = vowelss)
@@ -1623,7 +1623,7 @@ populateLexicon5 <- function(lexicon, iterations, probs, bart.f1, bat.f1, bet.f1
 ```{r lexicon5}
 set.seed(4321)
 
-lexicon.size <- 1000
+lexicon.size <- 100
 frequency <- rep(seq(1, 334), each = 3)[1:lexicon.size]
 group.size <- 10
 lexicon5 <- createLexicon5(lexicon.size, frequency, group.size)
@@ -1655,7 +1655,7 @@ change5 <- data.frame("word" = numeric(),
 ```
 
 ```{r vowel-shift-5}
-iterations <- 200000
+iterations <- 50000
 bias <- -0.3
 
 for (iteration in 1:iterations) {
@@ -1836,7 +1836,7 @@ for (iteration in 1:iterations) {
             }
             f1.mean <- c(f1.mean, word.f1.mean)
         }
-        vowelss <- rep_len(c("BART", "BAT", "BET"), lexicon.size)
+        vowelss <- rep(c("BART", "BAT", "BET"), len = lexicon.size)
         words <- seq(1, lexicon.size)
         time <- rep(iteration, lexicon.size)
         change.current <- data.frame("word" = words, time, "frequency" = now.frequency, "f1" = f1.mean, "vowel" = vowelss)
@@ -1909,6 +1909,8 @@ simulation1.gam <- bam(
         vowel.ord +
         s(time, bs = "cr") +
         s(time, bs = "cr", by = frequency) +
+        s(time, bs = "cr", by = vowel.ord) +
+        s(frequency, bs = "cr") +
         ti(time, frequency) +
         ti(time, frequency, by = vowel.ord) +
         s(word.ord, bs = "re"),
@@ -1924,8 +1926,11 @@ simulation1.gam.ar <- bam(
         vowel.ord +
         s(time, bs = "cr") +
         s(time, bs = "cr", by = frequency) +
+        s(time, bs = "cr", by = vowel.ord) +
+        s(frequency, bs = "cr") +
         ti(time, frequency) +
-        ti(time, frequency, by = vowel.ord),
+        ti(time, frequency, by = vowel.ord) +
+        s(word.ord, bs = "re"),
     data = change,
     method = "ML",
     AR.start = start.event,
@@ -1938,9 +1943,13 @@ simulation1.gam.null <- bam(
     f1 ~
 #        frequency +
         vowel.ord +
-        s(time, bs = "cr"),# +
+        s(time, bs = "cr") +
+#        s(time, bs = "cr", by = frequency) +
+        s(time, bs = "cr", by = vowel.ord) +
+#        s(frequency, bs = "cr") +
 #        ti(time, frequency) +
-#        ti(time, frequency, by = vowel.ord),
+#        ti(time, frequency, by = vowel.ord) +
+        s(word.ord, bs = "re"),
     data = change,
     method = "ML"
 )
@@ -2249,10 +2258,8 @@ anova(simulation5.lm.null, simulation5.lm)
 ```{r change5}
 change5$word.ord <- as.ordered(change5$word)
 change5$vowel.ord <- as.ordered(change5$vowel)
-contrasts(change5$word.ord) <- "contr.treatment"
-contrasts(change5$vowel.ord) <- "contr.treatment"
 change5 <- change5 %>%
-#    na.omit() %>%
+    na.omit() %>%
     arrange(word, time) %>%
     start_event(column = "time", event = c("word"))
 ```
@@ -2264,12 +2271,14 @@ simulation5.gam <- bam(
         frequency +
         vowel.ord +
         s(time, bs = "cr") +
-        s(time, by = frequency, bs = "cr") +
-        s(time, by = vowel.ord, bs = "cr") +
+        s(time, bs = "cr", by = frequency) +
+        s(time, bs = "cr", by = vowel.ord) +
+        s(frequency, bs = "cr") +
         ti(time, frequency) +
-        ti(time, frequency, by = vowel.ord),
+        ti(time, frequency, by = vowel.ord) +
+        s(word.ord, bs = "re"),
     data = change5,
-    method = "fREML"
+    method = "ML"
 )
 
 summary(simulation5.gam)
@@ -2279,12 +2288,11 @@ simulation5.gam.null <- bam(
 #        frequency +
         vowel.ord +
         s(time, bs = "cr") +
-        s(time, by = frequency, bs = "cr") +
         s(time, by = vowel.ord, bs = "cr") +
         ti(time, frequency),
 #        ti(time, frequency, by = vowel.ord),
     data = change5,
-    method = "fREML"
+    method = "ML"
 )
 
 compareML(simulation5.gam.null, simulation5.gam)
@@ -2309,12 +2317,13 @@ simulation5.gam.ar <- bam(
         frequency +
         vowel.ord +
         s(time, bs = "cr") +
-        s(time, by = frequency, bs = "cr") +
-        s(time, by = vowel.ord, bs = "cr") +
+        s(time, bs = "cr", by = frequency) +
+        s(time, bs = "cr", by = vowel.ord) +
+        s(frequency, bs = "cr") +
         ti(time, frequency) +
         ti(time, frequency, by = vowel.ord),
     data = change5,
-    method = "fREML",
+    method = "ML",
     rho = r1,
     AR.start = change5$start.event
 )
@@ -2326,12 +2335,13 @@ simulation5.gam.ar.null <- bam(
 #        frequency +
         vowel.ord +
         s(time, bs = "cr") +
-#        s(time, by = frequency, bs = "cr") +
-        s(time, by = vowel.ord, bs = "cr") +
-        ti(time, frequency) +
-        ti(time, frequency, by = vowel.ord),
+#        s(time, bs = "cr", by = frequency) +
+        s(time, bs = "cr", by = vowel.ord), #+
+#        s(frequency, bs = "cr") +
+#        ti(time, frequency) +
+#        ti(time, frequency, by = vowel.ord),
     data = change5,
-    method = "fREML",
+    method = "ML",
     rho = r1,
     AR.start = change5$start.event
 )
