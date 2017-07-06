@@ -16,13 +16,11 @@ indent: true
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 library(zipfR)
-library(ggplot2)
+library(tidyverse)
 theme_set(theme_bw())
-library(dplyr)
 library(lme4)
 library(afex)
 library(effects)
-library(mgcv)
 library(itsadug)
 ```
 
