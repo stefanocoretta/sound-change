@@ -22,6 +22,7 @@ library(lme4)
 library(afex)
 library(effects)
 library(itsadug)
+options(contrasts = rep("contr.treatment", 2))
 ```
 
 # General functions
@@ -1894,8 +1895,6 @@ summary(simulation1.lm)
 ```{r change}
 change$word.ord <- as.ordered(change$word)
 change$vowel.ord <- as.ordered(change$vowel)
-contrasts(change$word.ord) <- "contr.treatment"
-contrasts(change$vowel.ord) <- "contr.treatment"
 change <- change %>%
     na.omit() %>%
     arrange(word, time) %>%
@@ -2006,8 +2005,6 @@ anova(simulation2.lm.null, simulation2.lm)
 ```{r change2}
 change2$word.ord <- as.ordered(change2$word)
 change2$vowel.ord <- as.ordered(change2$vowel)
-contrasts(change2$vowel.ord) <- "contr.treatment"
-contrasts(change2$vowel.ord) <- "contr.treatment"
 change2 <- change2 %>%
     na.omit() %>%
     arrange(word, time) %>%
