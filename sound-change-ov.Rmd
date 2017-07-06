@@ -47,7 +47,7 @@ produceFormants <- function(target, bias = 0) {
 }
 ```
 
-# Simulation 1
+# Simulation 1: BART, BAT, F1
 
 The first simulation models the effects of an enrouching category affected by a bias on the category towards which the former is moving. In our case, the encrouching category is the the BART vowel, while the other category is the BAT vowel.
 
@@ -357,7 +357,7 @@ ggplot(change.bin, aes(time, f1, colour = freq.bin)) +
 
 There's seems to be an interaction between the noise proportion and the bias proportion. It seems that the noise proportion needs to be big enough, but the bias proportion should be bigger than the bigger noise proportion possible.
 
-# Simulation 2
+# Simulation 2: BART, BAT, BET, F1, F2
 
 ```{r createLexicon2}
 createLexicon2 <- function(size, frequency, group.size) {
@@ -830,7 +830,7 @@ ggplot(change2.bin, aes(time, f2, colour = freq.bin)) +
     scale_colour_discrete(name = "Frequency bin")
 ```
 
-# Simulation 3
+# Simulation 3: BART, BAT, BET, F1
 
 This simulation is an extention of Simulation 1, which had only two vowel categories. In this simulation I will try to add a third vowel category.
 
@@ -1184,7 +1184,7 @@ ggplot(change3.bin, aes(time, f1, colour = freq.bin)) +
     labs(title = "Change of mean F1 through time in high and low frequency words")
 ```
 
-# Simulation 4
+# Simulation 4: BART, BAT, F1, F2
 
 This simulation is like Simulation 1, but there is also F2. The outcome is the same as for Simulation 1.
 
@@ -1570,7 +1570,7 @@ ggplot(change4.bin, aes(time, f2, colour = freq.bin)) +
     labs(title = "Change of mean F1 through time in high and low frequency words")
 ```
 
-# Simulation 5
+# Simulation 5: BART, BAT, BET, F1, step-wise frequency
 
 This is a modification of Simulation 3: now words have equally spaced frequency values, equally distributed across vowel categories.
 
@@ -1875,7 +1875,7 @@ ggplot(aes(time, f1, colour = freq.bin)) +
 
 BART and BAT words, F1 only.
 
-```{r}
+```{r s1-lmer}
 change.scaled <- mutate(change, frequency = scale(frequency), time = scale(time))
 
 simulation1.lm <- lmer(
@@ -1976,7 +1976,7 @@ plot_smooth(simulation1.gam, view="time", cond=list(frequency=80, vowel.ord = "B
 
 BART, BAT and BET words, F1 and F2
 
-```{r}
+```{r s2-lmer}
 simulation2.lm <- lmer(
     f1 ~
         time *
@@ -2092,7 +2092,7 @@ fvisgam(simulation2.gam.ar, view = c("time","frequency"),
 
 BART, BAT and BET words, F1 only.
 
-```{r}
+```{r s3-lmer}
 simulation3.lm <- lmer(
     f1 ~
         time *
