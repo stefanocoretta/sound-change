@@ -78,7 +78,7 @@ sound_shift <- function(lexicon_size, vowels, group_size, formants, biased_vowel
     lexicon_f1 <- lexicon[["f1"]]
     number_vowels <- length(vowels)
     
-    new_lexicon_f1 <- tibble(f1_1 = 1:lexicon_size)
+    new_lexicon_f1 <- tibble(`1` = 1:lexicon_size)
     iteration_time <- 1
     
     for (iteration in 1:iterations) {
@@ -197,7 +197,7 @@ sound_shift <- function(lexicon_size, vowels, group_size, formants, biased_vowel
     
     
         if (iteration %% save_freq == 0) {
-            column <- paste("f1_", iteration_time, sep = "")
+            column <- paste(iteration_time, sep = "")
             
             new_lexicon_f1 <- mutate(
                 new_lexicon_f1,
@@ -209,7 +209,8 @@ sound_shift <- function(lexicon_size, vowels, group_size, formants, biased_vowel
     }
     
     lexicon <- cbind(lexicon, new_lexicon_f1) %>%
-        rename(f1_0 = f1)
+        rename(`0` = f1) %>%
+        gather(time, f1, matches("\\d"))
     
     return(lexicon)
 }
@@ -234,14 +235,14 @@ group_by(lexicon, word) %>%
 ```
 
 ```{r}
-sound_shift(
+lexicon <- sound_shift(
     lexicon_size = 100,
     vowels = c("BART", "BAT"),
     group_size = 5,
     formants = c(6.5, 5.5),
     biased_vowel = "BART",
     bias = -0.3,
-    iterations = 100,
+    iterations = 1000,
     save_freq = 10
 )
 ```
