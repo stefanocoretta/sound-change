@@ -93,6 +93,8 @@ sound_shift <- function(lexicon, iterations, biased_vowel, bias) {
 }
 ```
 
+# Simulation
+
 ```{r shift}
 system.time(
     lexicon <- create_lexicon(100, c("BART", "BAT"), 5, c(6.5, 5.5)) %>%
