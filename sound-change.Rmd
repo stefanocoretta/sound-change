@@ -69,7 +69,7 @@ populate_lexicon <- function(lexicon) {
 ```
 
 ```{r sound-shift}
-sound_shift <- function(lexicon_size, vowels, group_size, formants, biased_vowel, bias, iterations) {
+sound_shift <- function(lexicon_size, vowels, group_size, formants, biased_vowel, bias, iterations, save_freq) {
     lexicon <- create_lexicon(lexicon_size, vowels, group_size, formants) %>%
         populate_lexicon()
     
@@ -78,7 +78,10 @@ sound_shift <- function(lexicon_size, vowels, group_size, formants, biased_vowel
     lexicon_f1 <- lexicon[["f1"]]
     number_vowels <- length(vowels)
     
-    for (i in 1:iterations) {
+    new_lexicon_f1 <- tibble(f1_1 = 1:lexicon_size)
+    iteration_time <- 1
+    
+    for (iteration in 1:iterations) {
         word_id <- sample(1:lexicon_size, 1, prob = lexicon_frequency)
         
         vowel <- lexicon[["vowel"]][word_id]
@@ -185,7 +188,27 @@ sound_shift <- function(lexicon_size, vowels, group_size, formants, biased_vowel
                 encode <- TRUE
             }
         }
+        
+        #### Encode ####
+        
+        if (encode) {
+            lexicon_f1[[word_id]][[length(lexicon_f1[[word_id]]) + 1]] <- outcome
+        }
+    
+    
+        if (iteration %% save_freq == 0) {
+            column <- paste("f1_", iteration_time, sep = "")
+            
+            new_lexicon_f1 <- mutate(
+                new_lexicon_f1,
+                !!column := lexicon_f1
+            )
+            
+            iteration_time <- iteration_time + 1
+        }
     }
+    
+    return(new_lexicon_f1)
 }
 ```
 
@@ -209,13 +232,14 @@ group_by(lexicon, word) %>%
 
 ```{r}
 sound_shift(
-    lexicon_size = 105,
+    lexicon_size = 100,
     vowels = c("BART", "BAT"),
     group_size = 5,
     formants = c(6.5, 5.5),
     biased_vowel = "BART",
     bias = -0.3,
-    iterations = 10
+    iterations = 100,
+    save_freq = 10
 )
 ```
 
