@@ -208,7 +208,10 @@ sound_shift <- function(lexicon_size, vowels, group_size, formants, biased_vowel
         }
     }
     
-    return(new_lexicon_f1)
+    lexicon <- cbind(lexicon, new_lexicon_f1) %>%
+        rename(f1_0 = f1)
+    
+    return(lexicon)
 }
 ```
 
