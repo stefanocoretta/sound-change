@@ -115,10 +115,10 @@ populateLexicon <- function(lexicon, iterations, probs, bart.f1, bat.f1) {
 We can now populate a lexicon with exemplars for BART and BAT vowels.
 
 ```{r lexicon}
-set.seed(4321)
+set.seed(1234)
 
 lexicon.size <- 100
-frequency <- 1:lexicon.size
+frequency <- rep(1:lexicon.size, each = 2, len = lexicon.size)
 group.size <- 5
 lexicon <- createLexicon(lexicon.size, frequency, group.size)
 
@@ -1948,7 +1948,7 @@ simulation1.gam.null <- bam(
         s(time, bs = "cr", by = vowel.ord) +
 #        s(frequency, bs = "cr") +
 #        ti(time, frequency) +
-#        ti(time, frequency, by = vowel.ord) +
+#        ti(time, frequency, by = vowel.ord)
         s(word.ord, bs = "re"),
     data = change,
     method = "ML"
@@ -1957,10 +1957,17 @@ simulation1.gam.null <- bam(
 compareML(simulation1.gam.null, simulation1.gam)
 ```
 
-```{r simulation1-gam-plot}
-fvisgam(simulation1.gam, view = c("time","frequency"),
+```{r simulation1-gam-plot-bart}
+fvisgam(simulation1.gam.ar, view = c("time","frequency"),
+        cond = list(vowel.ord = "BART"),
+        rm.ranef = TRUE
+        )
+```
+
+```{r simulation1-gam-plot-bat}
+fvisgam(simulation1.gam.ar, view = c("time","frequency"),
         cond = list(vowel.ord = "BAT"),
-        ylim = quantile(change$frequency, c(0, 1))
+        rm.ranef = TRUE
         )
 ```
 
@@ -1970,12 +1977,12 @@ acf_resid(simulation1.gam.ar, split_pred="AR.start")
 ```
 
 ```{r change-smooths-BAT}
-plot_smooth(simulation1.gam, view="time", cond=list(frequency=10, vowel.ord = "BAT"),
+plot_smooth(simulation1.gam.ar, view="time", cond=list(frequency=5, vowel.ord = "BAT"),
             rug=F, col="red")
-plot_smooth(simulation1.gam, view="time", cond=list(frequency=50, vowel.ord = "BAT"),
-            rug=F, col="blue", add=T)
-plot_smooth(simulation1.gam, view="time", cond=list(frequency=80, vowel.ord = "BAT"),
+plot_smooth(simulation1.gam.ar, view="time", cond=list(frequency=25, vowel.ord = "BAT"),
             rug=F, col="green", add=T)
+plot_smooth(simulation1.gam.ar, view="time", cond=list(frequency=45, vowel.ord = "BAT"),
+            rug=F, col="blue", add=T)
 ```
 
 
