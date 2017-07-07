@@ -885,8 +885,8 @@ populateLexicon3 <- function(lexicon, iterations, probs, bart.f1, bat.f1, bet.f1
 ```{r lexicon3}
 set.seed(4321)
 
-lexicon.size <- 1000
-frequency <- zipfDistr(lexicon.size)
+lexicon.size <- 100
+frequency <- 1:lexicon.size
 group.size <- 10
 lexicon3 <- createLexicon3(lexicon.size, frequency, group.size)
 
@@ -917,7 +917,7 @@ change3 <- data.frame("word" = numeric(),
 ```
 
 ```{r vowel-shift-3}
-iterations <- 200000
+iterations <- 50000
 bias <- -0.3
 
 for (iteration in 1:iterations) {
@@ -1098,7 +1098,7 @@ for (iteration in 1:iterations) {
             }
             f1.mean <- c(f1.mean, word.f1.mean)
         }
-        vowelss <- rep_len(c("BART", "BAT", "BET"), lexicon.size)
+        vowelss <- rep(c("BART", "BAT", "BET"), len = lexicon.size)
         words <- seq(1, lexicon.size)
         time <- rep(iteration, lexicon.size)
         change.current <- data.frame("word" = words, time, "frequency" = now.frequency, "f1" = f1.mean, "vowel" = vowelss)
@@ -1109,17 +1109,17 @@ for (iteration in 1:iterations) {
 
 ```{r plot-source-3, eval = FALSE}
 bart.source <- NULL
-for (i in seq(1, 1000, by = 3)) {
+for (i in seq(1, 100, by = 3)) {
     bart.source <- c(bart.source, unlist(source.lexicon3[[i]][[4]]))
 }
 
 bat.source <- NULL
-for (i in seq(2, 1000, by = 3)) {
+for (i in seq(2, 100, by = 3)) {
     bat.source <- c(bat.source, unlist(source.lexicon3[[i]][[4]]))
 }
 
 bet.source <- NULL
-for (i in seq(3, 1000, by = 3)) {
+for (i in seq(3, 100, by = 3)) {
     bet.source <- c(bet.source, unlist(source.lexicon3[[i]][[4]]))
 }
 
@@ -1136,17 +1136,17 @@ ggplot(vowels.source, aes(f1, colour = vowel)) +
 
 ```{r plot-final-3, eval = FALSE}
 bart <- NULL
-for (i in seq(1, 1000, by = 3)) {
+for (i in seq(1, 100, by = 3)) {
     bart <- c(bart, unlist(lexicon3[[i]][[4]]))
 }
 
 bat <- NULL
-for (i in seq(2, 1000, by = 3)) {
+for (i in seq(2, 100, by = 3)) {
     bat <- c(bat, unlist(lexicon3[[i]][[4]]))
 }
 
 bet <- NULL
-for (i in seq(3, 1000, by = 3)) {
+for (i in seq(3, 100, by = 3)) {
     bet <- c(bet, unlist(lexicon3[[i]][[4]]))
 }
 
@@ -2097,6 +2097,10 @@ fvisgam(simulation2.gam.ar, view = c("time","frequency"),
 
 BART, BAT and BET words, F1 only.
 
+```{r change5-scaled}
+change3.scaled <- mutate(change3, frequency = scale(frequency), time = scale(time))
+```
+
 ```{r s3-lmer}
 simulation3.lm <- lmer(
     f1 ~
@@ -2104,7 +2108,7 @@ simulation3.lm <- lmer(
         frequency *
         vowel +
         (1|word),
-    data = change3,
+    data = change3.scaled,
     REML = FALSE
 )
 
@@ -2116,22 +2120,25 @@ simulation3.lm.null <- lmer(
         frequency *
         vowel +
         (1|word),
-    data = change3,
+    data = change3.scaled,
     REML = FALSE
 )
 
 anova(simulation3.lm.null, simulation3.lm)
 ```
 
+```{r s3-lmer-plot, eval=FALSE}
+plot(allEffects(simulation3.lm))
+```
+
+
 ### GAM
 
 ```{r change3}
 change3$word.ord <- as.ordered(change3$word)
 change3$vowel.ord <- as.ordered(change3$vowel)
-contrasts(change3$word.ord) <- "contr.treatment"
-contrasts(change3$vowel.ord) <- "contr.treatment"
 change3 <- change3 %>%
-#    na.omit() %>%
+    na.omit() %>%
     arrange(word, time) %>%
     start_event(column = "time", event = c("word"))
 ```
@@ -2143,11 +2150,14 @@ simulation3.gam <- bam(
         frequency +
         vowel.ord +
         s(time, bs = "cr") +
-        s(time, by = frequency, bs = "cr") +
+        s(time, bs = "cr", by = frequency) +
+        s(time, bs = "cr", by = vowel.ord) +
+        s(frequency, bs = "cr") +
+        ti(time, frequency) +
         ti(time, frequency, by = vowel.ord) +
-        s(time, by = vowel.ord, bs = "cr"),
+        s(word.ord, bs = "re"),
     data = change3,
-    method = "fREML"
+    method = "ML"
 )
 
 summary(simulation3.gam)
@@ -2186,16 +2196,36 @@ simulation3.gam.ar <- bam(
         frequency +
         vowel.ord +
         s(time, bs = "cr") +
-        s(time, by = frequency, bs = "cr") +
-        ti(time, frequency, by = vowel.ord) +
-        s(time, by = vowel.ord, bs = "cr"),
+        s(time, bs = "cr", by = frequency) +
+        s(time, bs = "cr", by = vowel.ord) +
+        s(frequency, bs = "cr") +
+        ti(time, frequency) +
+        ti(time, frequency, by = vowel.ord),
     data = change3,
-    method = "fREML",
+    method = "ML",
     rho = r1,
     AR.start = change3$start.event
 )
 
 summary(simulation3.gam.ar)
+
+simulation3.gam.ar.null <- bam(
+    f1 ~
+#        frequency +
+        vowel.ord +
+        s(time, bs = "cr") +
+#        s(time, bs = "cr", by = frequency) +
+        s(time, bs = "cr", by = vowel.ord) +
+        s(frequency, bs = "cr"),# +
+#        ti(time, frequency) +
+#        ti(time, frequency, by = vowel.ord),
+    data = change3,
+    method = "ML",
+    rho = r1,
+    AR.start = change3$start.event
+)
+
+compareML(simulation3.gam.ar, simulation3.gam.ar.null)
 ```
 
 ```{r simulation3-gam-ar-acr}
@@ -2204,20 +2234,17 @@ acf_resid(simulation3.gam.ar, split_pred="AR.start")
 
 ```{r simulation3-gam-ar-plot}
 fvisgam(simulation3.gam.ar, view = c("time","frequency"),
-        cond = list(vowel.ord = "BAT"),
-        ylim = quantile(change3$frequency, c(0, 1))
+        cond = list(vowel.ord = "BET")
         )
 ```
 
-```{r}
-plot_smooth(simulation2.gam.ar, view="time", cond=list(frequency=10, vowel.ord = "BAT"),
+```{r simulation3-gam-smooth}
+plot_smooth(simulation3.gam.ar, view="time", cond=list(frequency=10, vowel.ord = "BET"),
             rug=F, col="red")
-plot_smooth(simulation2.gam.ar, view="time", cond=list(frequency=40, vowel.ord = "BAT"),
+plot_smooth(simulation3.gam.ar, view="time", cond=list(frequency=50, vowel.ord = "BET"),
             rug=F, col="blue", add=T)
-plot_smooth(simulation2.gam.ar, view="time", cond=list(frequency=80, vowel.ord = "BAT"),
+plot_smooth(simulation3.gam.ar, view="time", cond=list(frequency=90, vowel.ord = "BET"),
             rug=F, col="green", add=T)
-#plot_smooth(simulation3.gam.ar, view="time", cond=list(frequency=120, vowel.ord = "BAT"),
-#            rug=F, col="yellow", add=T)
 ```
 
 ## Simulation 5
