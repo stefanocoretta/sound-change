@@ -218,24 +218,8 @@ sound_shift <- function(lexicon_size, vowels, group_size, formants, biased_vowel
 
 # Simulation
 
-```{r shift}
-system.time(
-    lexicon <- create_lexicon(100, c("BART", "BAT"), 5, c(6.5, 5.5)) %>%
-        populate_lexicon()
-)
-
-unnest(lexicon, f1) %>%
-    ggplot(aes(f1, colour = vowel)) +
-    geom_density()
-
-group_by(lexicon, word) %>%
-    mutate(f1_mean = mean(unlist(f1))) %>%
-    ungroup() %>%
-    ggplot(aes(f1_mean, colour = vowel)) + geom_density()
-```
-
 ```{r}
-lexicon <- sound_shift(
+system.time(lexicon <- sound_shift(
     lexicon_size = 100,
     vowels = c("BART", "BAT"),
     group_size = 5,
@@ -243,8 +227,15 @@ lexicon <- sound_shift(
     biased_vowel = "BART",
     bias = -0.3,
     iterations = 1000,
-    save_freq = 10
+    save_freq = 100
+) 
 )
+```
+
+```{r}
+lexicon %>%
+    group_by(time, word) %>%
+    mutate(f1_mean = mean(unlist(f1)))
 ```
 
 
