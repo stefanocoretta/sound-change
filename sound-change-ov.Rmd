@@ -1117,7 +1117,7 @@ populateLexicon3 <- function(lexicon, iterations, probs, bart.f1, bat.f1, bet.f1
 set.seed(4321)
 
 lexicon.size <- 100
-frequency <- 1:lexicon.size
+frequency <- rep(1:lexicon.size, each = 3, len = lexicon.size)
 group.size <- 10
 lexicon3 <- createLexicon3(lexicon.size, frequency, group.size)
 
