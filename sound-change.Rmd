@@ -218,8 +218,8 @@ system.time(lexicon <- sound_shift(
     formants = c(6.5, 5.5),
     biased_vowel = "BART",
     bias = -0.3,
-    iterations = 10000,
-    save_freq = 100
+    iterations = 200000,
+    save_freq = 10000
 ) 
 )
 ```
@@ -228,7 +228,14 @@ system.time(lexicon <- sound_shift(
 lexicon <- lexicon %>%
     group_by(time, word) %>%
     mutate(f1_mean = mean(unlist(f1))) %>%
-    ungroup()
+    ungroup() %>%
+    mutate(
+        freq_bin = ifelse(
+            frequency < max(frequency)/2,
+            "low",
+            "high"
+        )
+    )
 ```
 
 ```{r}
@@ -236,5 +243,13 @@ lexicon %>%
     ggplot(aes(time, f1_mean)) +
     geom_point() +
     geom_smooth(aes(colour = vowel))
+```
+
+```{r}
+lexicon %>%
+    ggplot(aes(time, f1_mean, colour = freq_bin)) +
+    geom_point(alpha = 0.5, size = 0.5) +
+    geom_smooth(se = FALSE) +
+    facet_grid(. ~ vowel)
 ```
 
