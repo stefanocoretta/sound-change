@@ -89,15 +89,15 @@ sound_shift <- function(lexicon_size, vowels, group_size, formants, biased_vowel
         word_class <- lexicon_class[word_id]
         
         if (vowel == biased_vowel) {
-            bias <- bias
+            current_bias <- bias
         } else {
-            bias <- 0
+            current_bias <- 0
         }
         
         #### Produce the chosen word ####
         
         target <- resample(unlist(lexicon_f1[word_id]))
-        outcome <- produce_formants(target, bias)
+        outcome <- produce_formants(target, current_bias)
         
         if (vowel == vowels[1]) {
             pool_max <- suppressWarnings(max(unlist(
