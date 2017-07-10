@@ -68,6 +68,26 @@ populate_lexicon <- function(lexicon) {
 }
 ```
 
+```{r get-encode}
+get_encode <- function(condition) {
+    if (condition) {
+        encoding_prob <- lexicon_frequency[word_id] /
+            max(lexicon_frequency)
+        
+        encode <- sample(c(TRUE, FALSE), 1,
+            prob = c(
+                encoding_prob, 1 - encoding_prob
+            )
+        )
+    } else {
+        encode <- TRUE
+    }
+    
+    return(encode)
+}
+```
+
+
 ```{r sound-shift}
 sound_shift <- function(lexicon_size, vowels, group_size, formants, biased_vowel, bias, iterations, save_freq) {
     lexicon <- create_lexicon(lexicon_size, vowels, group_size, formants) %>%
@@ -81,6 +101,8 @@ sound_shift <- function(lexicon_size, vowels, group_size, formants, biased_vowel
     number_vowels <- length(vowels)
     
     new_lexicon_f1 <- tibble(init = 1:lexicon_size)
+    
+    environment(get_encode) <- environment()
     
     for (iteration in 1:iterations) {
         word_id <- sample(1:lexicon_size, 1, prob = lexicon_frequency)
@@ -104,18 +126,8 @@ sound_shift <- function(lexicon_size, vowels, group_size, formants, biased_vowel
                 lexicon_f1[which(lexicon_vowel[which(lexicon_class == word_class)] == vowels[2])]
             )))
             
-            if (outcome <= pool_max) {
-                encoding_prob <- lexicon_frequency[word_id] /
-                    max(lexicon_frequency)
-                
-                encode <- sample(c(TRUE, FALSE), 1,
-                    prob = c(
-                        encoding_prob, 1 - encoding_prob
-                    )
-                )
-            } else {
-                encode <- TRUE
-            }
+            encode <- get_encode(outcome <= pool_max)
+            
         } else if (vowel == vowels[2]) {
             if (length(vowels) == 2) {
                 pool_min <- suppressWarnings(min(unlist(
@@ -123,18 +135,8 @@ sound_shift <- function(lexicon_size, vowels, group_size, formants, biased_vowel
                     )
                 ))
                 
-                if (outcome >= pool_min) {
-                    encoding_prob <- lexicon_frequency[word_id] /
-                        max(lexicon_frequency)
-                    
-                    encode <- sample(c(TRUE, FALSE), 1,
-                        prob = c(
-                            encoding_prob, 1 - encoding_prob
-                        )
-                    )
-                } else {
-                    encode <- TRUE
-                }
+                encode <- get_encode(outcome >= pool_min)
+                
             } else { # if length(vowels) == 3
                 pool_min <- suppressWarnings(min(unlist(
                     lexicon_f1[which(lexicon_vowel[which(lexicon_class == word_class)] == vowels[1])]
@@ -146,18 +148,7 @@ sound_shift <- function(lexicon_size, vowels, group_size, formants, biased_vowel
                     )
                 ))
                 
-                if (outcome >= pool_min || outcome <= pool_max) {
-                    encoding_prob <- lexicon_frequency[word_id] /
-                        max(lexicon_frequency)
-                    
-                    encode <- sample(c(TRUE, FALSE), 1,
-                        prob = c(
-                            encoding_prob, 1 - encoding_prob
-                        )
-                    )
-                } else {
-                    encode <- TRUE
-                }
+                encode <- get_encode(outcome >= pool_min || outcome <= pool_max)
             }
         } else { # if vowel == vowel[3]
             pool_min <- suppressWarnings(min(unlist(
@@ -165,18 +156,7 @@ sound_shift <- function(lexicon_size, vowels, group_size, formants, biased_vowel
                 )
             ))
             
-            if (outcome >= pool_min) {
-                encoding_prob <- lexicon_frequency[word_id] /
-                    max(lexicon_frequency)
-                
-                encode <- sample(c(TRUE, FALSE), 1,
-                    prob = c(
-                        encoding_prob, 1 - encoding_prob
-                    )
-                )
-            } else {
-                encode <- TRUE
-            }
+            encode <- get_encode(outcome >= pool_min)
         }
         
         #### Encode ####
@@ -208,10 +188,10 @@ sound_shift <- function(lexicon_size, vowels, group_size, formants, biased_vowel
 }
 ```
 
-# Simulation
+# Two vowels, F1
 
 ```{r}
-system.time(lexicon <- sound_shift(
+lexicon <- sound_shift(
     lexicon_size = 100,
     vowels = c("BART", "BAT"),
     group_size = 5,
@@ -220,7 +200,6 @@ system.time(lexicon <- sound_shift(
     bias = -0.3,
     iterations = 200000,
     save_freq = 10000
-) 
 )
 ```
 
