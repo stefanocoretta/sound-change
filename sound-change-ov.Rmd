@@ -399,7 +399,7 @@ simulation1.gam <- bam(
         s(frequency, bs = "cr") +
         ti(time, frequency) +
         ti(time, frequency, by = vowel.ord) +
-        s(word.ord, bs = "re"),
+        s(time, word.ord, bs = "fs"),
     data = change,
     method = "ML"
 )
@@ -416,7 +416,7 @@ simulation1.gam.ar <- bam(
         s(frequency, bs = "cr") +
         ti(time, frequency) +
         ti(time, frequency, by = vowel.ord) +
-        s(word.ord, bs = "re"),
+        s(time, word.ord, bs = "fs"),
     data = change,
     method = "ML",
     AR.start = start.event,
@@ -1472,12 +1472,11 @@ simulation3.gam <- bam(
         frequency +
         vowel.ord +
         s(time, bs = "cr") +
-        s(time, bs = "cr", by = frequency) +
         s(time, bs = "cr", by = vowel.ord) +
         s(frequency, bs = "cr") +
         ti(time, frequency) +
         ti(time, frequency, by = vowel.ord) +
-        s(word.ord, bs = "re"),
+        s(time, word.ord, bs = "fs"),
     data = change3,
     method = "ML"
 )
@@ -1518,11 +1517,11 @@ simulation3.gam.ar <- bam(
         frequency +
         vowel.ord +
         s(time, bs = "cr") +
-        s(time, bs = "cr", by = frequency) +
         s(time, bs = "cr", by = vowel.ord) +
         s(frequency, bs = "cr") +
         ti(time, frequency) +
-        ti(time, frequency, by = vowel.ord),
+        ti(time, frequency, by = vowel.ord) +
+        s(time, word.ord, bs = "fs"),
     data = change3,
     method = "ML",
     rho = r1,
@@ -1536,11 +1535,11 @@ simulation3.gam.ar.null <- bam(
 #        frequency +
         vowel.ord +
         s(time, bs = "cr") +
-#        s(time, bs = "cr", by = frequency) +
         s(time, bs = "cr", by = vowel.ord) +
-        s(frequency, bs = "cr"),# +
+#        s(frequency, bs = "cr") +
 #        ti(time, frequency) +
-#        ti(time, frequency, by = vowel.ord),
+#        ti(time, frequency, by = vowel.ord) +
+        s(word.ord, bs = "fs"),
     data = change3,
     method = "ML",
     rho = r1,
@@ -1556,17 +1555,17 @@ acf_resid(simulation3.gam.ar, split_pred="AR.start")
 
 ```{r simulation3-gam-ar-plot}
 fvisgam(simulation3.gam.ar, view = c("time","frequency"),
-        cond = list(vowel.ord = "BET")
+        cond = list(vowel.ord = "BAT")
         )
 ```
 
 ```{r simulation3-gam-smooth}
-plot_smooth(simulation3.gam.ar, view="time", cond=list(frequency=10, vowel.ord = "BET"),
-            rug=F, col="red")
-plot_smooth(simulation3.gam.ar, view="time", cond=list(frequency=50, vowel.ord = "BET"),
-            rug=F, col="blue", add=T)
-plot_smooth(simulation3.gam.ar, view="time", cond=list(frequency=90, vowel.ord = "BET"),
-            rug=F, col="green", add=T)
+plot_smooth(simulation3.gam.ar, view="time", cond=list(frequency=5, vowel.ord = "BAT"),
+            rug=F, col="red", rm.ranef = TRUE)
+plot_smooth(simulation3.gam.ar, view="time", cond=list(frequency=20, vowel.ord = "BAT"),
+            rug=F, col="green", add=T, rm.ranef = TRUE)
+plot_smooth(simulation3.gam.ar, view="time", cond=list(frequency=30, vowel.ord = "BAT"),
+            rug=F, col="blue", add=T, rm.ranef = TRUE)
 ```
 
 
