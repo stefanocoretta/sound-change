@@ -74,6 +74,8 @@ sound_shift <- function(lexicon_size, vowels, group_size, formants, biased_vowel
         populate_lexicon()
     
     lexicon_size <- nrow(lexicon)
+    lexicon_vowel <- lexicon[["vowel"]]
+    lexicon_class <- lexicon[["class"]]
     lexicon_frequency <- lexicon[["frequency"]]
     lexicon_f1 <- lexicon[["f1"]]
     number_vowels <- length(vowels)
@@ -83,8 +85,8 @@ sound_shift <- function(lexicon_size, vowels, group_size, formants, biased_vowel
     for (iteration in 1:iterations) {
         word_id <- sample(1:lexicon_size, 1, prob = lexicon_frequency)
         
-        vowel <- lexicon[["vowel"]][word_id]
-        word_class <- lexicon[["class"]][word_id]
+        vowel <- lexicon_vowel[word_id]
+        word_class <- lexicon_class[word_id]
         
         if (vowel == biased_vowel) {
             bias <- bias
@@ -94,19 +96,16 @@ sound_shift <- function(lexicon_size, vowels, group_size, formants, biased_vowel
         
         #### Produce the chosen word ####
         
-        target <- resample(unlist(lexicon_f1[[word_id]]))
+        target <- resample(unlist(lexicon_f1[word_id]))
         outcome <- produce_formants(target, bias)
         
         if (vowel == vowels[1]) {
             pool_max <- suppressWarnings(max(unlist(
-                filter(lexicon,
-                       class == word_class,
-                       vowel == vowels[2])[["f1"]]
-                )
-            ))
+                lexicon_f1[which(lexicon_vowel[which(lexicon_class == word_class)] == vowels[2])]
+            )))
             
             if (outcome <= pool_max) {
-                encoding_prob <- lexicon[["frequency"]][word_id] /
+                encoding_prob <- lexicon_frequency[word_id] /
                     max(lexicon_frequency)
                 
                 encode <- sample(c(TRUE, FALSE), 1,
@@ -120,14 +119,12 @@ sound_shift <- function(lexicon_size, vowels, group_size, formants, biased_vowel
         } else if (vowel == vowels[2]) {
             if (length(vowels) == 2) {
                 pool_min <- suppressWarnings(min(unlist(
-                    filter(lexicon,
-                           class == word_class,
-                           vowel == vowels[1])[["f1"]]
+                lexicon_f1[which(lexicon_vowel[which(lexicon_class == word_class)] == vowels[1])]
                     )
                 ))
                 
                 if (outcome >= pool_min) {
-                    encoding_prob <- lexicon[["frequency"]][word_id] /
+                    encoding_prob <- lexicon_frequency[word_id] /
                         max(lexicon_frequency)
                     
                     encode <- sample(c(TRUE, FALSE), 1,
@@ -140,21 +137,17 @@ sound_shift <- function(lexicon_size, vowels, group_size, formants, biased_vowel
                 }
             } else { # if length(vowels) == 3
                 pool_min <- suppressWarnings(min(unlist(
-                    filter(lexicon,
-                           class == word_class,
-                           vowel == vowels[1])[["f1"]]
+                    lexicon_f1[which(lexicon_vowel[which(lexicon_class == word_class)] == vowels[1])]
                     )
                 ))
                 
                 pool_max <- suppressWarnings(max(unlist(
-                    filter(lexicon,
-                           class == word_class,
-                           vowel == vowels[3])[["f1"]]
+                    lexicon_f1[which(lexicon_vowel[which(lexicon_class == word_class)] == vowels[3])]
                     )
                 ))
                 
                 if (outcome >= pool_min || outcome <= pool_max) {
-                    encoding_prob <- lexicon[["frequency"]][word_id] /
+                    encoding_prob <- lexicon_frequency[word_id] /
                         max(lexicon_frequency)
                     
                     encode <- sample(c(TRUE, FALSE), 1,
@@ -168,14 +161,12 @@ sound_shift <- function(lexicon_size, vowels, group_size, formants, biased_vowel
             }
         } else { # if vowel == vowel[3]
             pool_min <- suppressWarnings(min(unlist(
-                filter(lexicon,
-                       class == word_class,
-                       vowel == vowels[1])[["f1"]]
+                lexicon_f1[which(lexicon_vowel[which(lexicon_class == word_class)] == vowels[1])]
                 )
             ))
             
             if (outcome >= pool_min) {
-                encoding_prob <- lexicon[["frequency"]][word_id] /
+                encoding_prob <- lexicon_frequency[word_id] /
                     max(lexicon_frequency)
                 
                 encode <- sample(c(TRUE, FALSE), 1,
