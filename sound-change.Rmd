@@ -78,8 +78,7 @@ sound_shift <- function(lexicon_size, vowels, group_size, formants, biased_vowel
     lexicon_f1 <- lexicon[["f1"]]
     number_vowels <- length(vowels)
     
-    new_lexicon_f1 <- tibble(`1` = 1:lexicon_size)
-    iteration_time <- 1
+    new_lexicon_f1 <- tibble(init = 1:lexicon_size)
     
     for (iteration in 1:iterations) {
         word_id <- sample(1:lexicon_size, 1, prob = lexicon_frequency)
@@ -197,20 +196,22 @@ sound_shift <- function(lexicon_size, vowels, group_size, formants, biased_vowel
     
     
         if (iteration %% save_freq == 0) {
-            column <- paste(iteration_time, sep = "")
+            column <- as.character(iteration)
             
             new_lexicon_f1 <- mutate(
                 new_lexicon_f1,
                 !!column := lexicon_f1
             )
             
-            iteration_time <- iteration_time + 1
         }
     }
     
     lexicon <- cbind(lexicon, new_lexicon_f1) %>%
         rename(`0` = f1) %>%
-        gather(time, f1, matches("\\d"))
+        select(-init) %>%
+        gather(time, f1, matches("\\d")) %>%
+        mutate(time = as.integer(time))
+
     
     return(lexicon)
 }
@@ -226,16 +227,23 @@ system.time(lexicon <- sound_shift(
     formants = c(6.5, 5.5),
     biased_vowel = "BART",
     bias = -0.3,
-    iterations = 1000,
+    iterations = 10000,
     save_freq = 100
 ) 
 )
 ```
 
 ```{r}
-lexicon %>%
+lexicon <- lexicon %>%
     group_by(time, word) %>%
-    mutate(f1_mean = mean(unlist(f1)))
+    mutate(f1_mean = mean(unlist(f1))) %>%
+    ungroup()
 ```
 
+```{r}
+lexicon %>%
+    ggplot(aes(time, f1_mean)) +
+    geom_point() +
+    geom_smooth(aes(colour = vowel))
+```
 
