@@ -181,7 +181,10 @@ sound_shift <- function(lexicon_size, vowels, group_size, formants, biased_vowel
         rename(`0` = f1) %>%
         select(-init) %>%
         gather(time, f1, matches("\\d")) %>%
-        mutate(time = as.integer(time))
+        mutate(time = as.integer(time)) %>%
+        group_by(time, word) %>%
+        mutate(f1_mean = mean(unlist(f1))) %>%
+        ungroup()
 
     
     return(lexicon)
@@ -205,9 +208,6 @@ lexicon <- sound_shift(
 
 ```{r}
 lexicon <- lexicon %>%
-    group_by(time, word) %>%
-    mutate(f1_mean = mean(unlist(f1))) %>%
-    ungroup() %>%
     mutate(
         freq_bin = ifelse(
             frequency < max(frequency)/2,
