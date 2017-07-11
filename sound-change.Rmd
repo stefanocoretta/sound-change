@@ -223,7 +223,7 @@ lexicon <- lexicon %>%
 ```{r}
 lexicon %>%
     ggplot(aes(time, f1_mean)) +
-    geom_point(alpha = 0.5, size = 0.5) +
+    geom_jitter(alpha = 0.3, size = 0.5) +
     geom_smooth(aes(colour = vowel))
 ```
 
