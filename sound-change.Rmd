@@ -13,6 +13,7 @@ theme_set(theme_bw())
 library(lme4)
 library(effects)
 library(itsadug)
+set.seed(8788)
 ```
 
 # Functions
