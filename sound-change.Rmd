@@ -194,6 +194,8 @@ sound_shift <- function(lexicon_size, vowels, group_size, formants, biased_vowel
 
 # Two vowels, F1
 
+## Simulation
+
 ```{r}
 lexicon <- sound_shift(
     lexicon_size = 100,
@@ -204,11 +206,7 @@ lexicon <- sound_shift(
     bias = -0.3,
     iterations = 200000,
     save_freq = 10000
-)
-```
-
-```{r}
-lexicon <- lexicon %>%
+) %>%
     mutate(
         freq_bin = ifelse(
             frequency < max(frequency)/2,
@@ -254,6 +252,67 @@ lexicon %>%
     filter(time == 0) %>%
     ggplot(aes(frequency, f1_mean)) +
     geom_point(alpha = 0.1) +
-    geom_smooth(aes(colour = vowel), method = "lm")
+    geom_smooth(aes(colour = vowel), method = "lm") +
+    ylim(5, 7)
+
+lexicon %>%
+    filter(time == 100000) %>%
+    ggplot(aes(frequency, f1_mean)) +
+    geom_point(alpha = 0.1) +
+    geom_smooth(aes(colour = vowel), method = "lm") +
+    ylim(5, 7)
+
+lexicon %>%
+    filter(time == 200000) %>%
+    ggplot(aes(frequency, f1_mean)) +
+    geom_point(alpha = 0.1) +
+    geom_smooth(aes(colour = vowel), method = "lm") +
+    ylim(5, 7)
 ```
 
+# Three vowels, F1
+
+## Simulation
+
+```{r}
+lexicon.2 <- sound_shift(
+    lexicon_size = 100,
+    vowels = c("BART", "BAT", "BET"),
+    group_size = 5,
+    formants = c(6.5, 5.5, 4.5),
+    biased_vowel = "BART",
+    bias = -0.3,
+    iterations = 200000,
+    save_freq = 10000
+) %>%
+    mutate(
+        freq_bin = ifelse(
+            frequency < max(frequency)/2,
+            "low",
+            "high"
+        )
+    )
+```
+
+## Plotting
+
+```{r}
+lexicon.2 %>%
+    ggplot(aes(time, f1_mean)) +
+    geom_jitter(alpha = 0.3, size = 0.5) +
+    geom_smooth(aes(colour = vowel))
+```
+
+```{r}
+lexicon.2 %>%
+    ggplot(aes(time, f1_mean, colour = frequency, group = word)) +
+    geom_line() +
+    facet_grid(. ~ vowel)
+```
+
+```{r}
+lexicon.2 %>%
+    ggplot(aes(time, f1_mean, colour = freq_bin, group = word)) +
+    geom_line(alpha = 0.5) +
+    facet_grid(. ~ vowel)
+```
