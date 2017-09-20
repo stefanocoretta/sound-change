@@ -13,6 +13,7 @@ theme_set(theme_bw())
 library(lme4)
 library(effects)
 library(itsadug)
+library(tidymv)
 set.seed(8788)
 ```
 
@@ -196,7 +197,7 @@ sound_shift <- function(lexicon_size, vowels, group_size, formants, biased_vowel
 
 ## Simulation
 
-```{r}
+```{r lexicon}
 lexicon <- sound_shift(
     lexicon_size = 100,
     vowels = c("BART", "BAT"),
@@ -274,8 +275,8 @@ lexicon %>%
 
 ## Simulation
 
-```{r}
-lexicon.2 <- sound_shift(
+```{r lexicon-2}
+lexicon_2 <- sound_shift(
     lexicon_size = 100,
     vowels = c("BART", "BAT", "BET"),
     group_size = 5,
@@ -297,22 +298,115 @@ lexicon.2 <- sound_shift(
 ## Plotting
 
 ```{r}
-lexicon.2 %>%
+lexicon_2 %>%
     ggplot(aes(time, f1_mean)) +
     geom_jitter(alpha = 0.3, size = 0.5) +
     geom_smooth(aes(colour = vowel))
 ```
 
 ```{r}
-lexicon.2 %>%
+lexicon_2 %>%
     ggplot(aes(time, f1_mean, colour = frequency, group = word)) +
     geom_line() +
     facet_grid(. ~ vowel)
 ```
 
 ```{r}
-lexicon.2 %>%
+lexicon_2 %>%
     ggplot(aes(time, f1_mean, colour = freq_bin, group = word)) +
     geom_line(alpha = 0.5) +
     facet_grid(. ~ vowel)
+```
+
+# Analysis
+
+## Two vowels, F1
+
+```{r lexicon-prep}
+lexicon <- lexicon %>%
+    mutate(
+        vowel_ord = ordered(vowel, levels = c("BART", "BAT")),
+        word_ord = as.ordered(word)
+    ) %>%
+    arrange(word, time) %>%
+    create_event_start("word")
+```
+
+```{r lexicon-gam}
+lexicon_gam <- bam(
+    f1_mean ~
+        frequency +
+        vowel_ord +
+        s(time, bs = "cr") +
+        s(time, bs = "cr", by = frequency) +
+        s(time, bs = "cr", by = vowel_ord) +
+        s(frequency, bs = "cr") +
+        ti(time, frequency) +
+        ti(time, frequency, by = vowel_ord) +
+        s(time, word_ord, bs = "fs"),
+    data = lexicon,
+    method = "fREML"
+)
+
+summary(lexicon_gam)
+```
+
+```{r lexicon-gam-plot}
+fvisgam(lexicon_gam, view = c("time","frequency"),
+        cond = list(vowel_ord = "BART"),
+        rm.ranef = TRUE
+        )
+
+fvisgam(lexicon_gam, view = c("time","frequency"),
+        cond = list(vowel_ord = "BAT"),
+        rm.ranef = TRUE
+        )
+```
+
+## Three vowels, F1
+
+```{r lexicon-2-prep}
+lexicon_2 <- lexicon_2 %>%
+    mutate(
+        vowel_ord = ordered(vowel, levels = c("BART", "BAT", "BET")),
+        word_ord = as.ordered(word)
+    ) %>%
+    arrange(word, time) %>%
+    create_event_start("word")
+```
+
+```{r lexicon-2-gam}
+lexicon_2_gam <- bam(
+    f1_mean ~
+        frequency +
+        vowel_ord +
+        s(time, bs = "cr") +
+        s(time, bs = "cr", by = frequency) +
+        s(time, bs = "cr", by = vowel_ord) +
+        s(frequency, bs = "cr") +
+        ti(time, frequency) +
+        ti(time, frequency, by = vowel_ord) +
+        s(time, word_ord, bs = "fs"),
+    data = lexicon_2,
+    method = "fREML"
+)
+
+summary(lexicon_2_gam)
+```
+
+```{r lexicon-2-gam-plot}
+fvisgam(lexicon_2_gam, view = c("time","frequency"),
+        cond = list(vowel_ord = "BART"),
+        rm.ranef = TRUE
+        )
+
+fvisgam(lexicon_2_gam, view = c("time","frequency"),
+        cond = list(vowel_ord = "BAT"),
+        rm.ranef = TRUE
+        )
+
+fvisgam(lexicon_2_gam, view = c("time","frequency"),
+        cond = list(vowel_ord = "BET"),
+        rm.ranef = TRUE
+        )
 ```

@@ -1,7 +1,7 @@
 ---
 title: "Modelling push chains in sound change"
 author: "Stefano Coretta"
-date: \today
+date: "20 Sep 2017"
 output:
   pdf_document:
     highlight: tango
