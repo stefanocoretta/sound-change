@@ -12,6 +12,7 @@ theme_set(theme_bw())
 library(zipfR)
 library(mgcv)
 library(itsadug)
+options(contrasts = rep ("contr.treatment", 2))
 ```
 
 # Initialise
@@ -100,15 +101,14 @@ lexicon.change %>%
 
 ```{r}
 lexicon.change %>%
-    ggplot(aes(iteration, glot.prob, group = word)) +
-    geom_line(stat = "smooth", method = "loess", alpha = 0.1, se = FALSE)
+    ggplot(aes(iteration, glot.prob, group = word, colour = freq.bin)) +
+    geom_line(stat = "smooth", method = "loess", alpha = 0.5, se = FALSE)
 ```
 
 ## Analysis
 
 ```{r}
 lexicon.change$word.ord <- as.ordered(lexicon.change$word)
-contrasts(lexicon.change$word.ord) <- "contr.treatment"
 lexicon.change <- lexicon.change %>%
     arrange(word, iteration) %>%
     start_event(column = "iteration", event = c("word"))
@@ -118,8 +118,9 @@ lexicon.change <- lexicon.change %>%
 glot.gam <- bam(
     glot.prob ~
         frequency +
+        s(frequency, bs = "cr") +
         s(iteration, bs = "cr") +
-        s(iteration, by = frequency, bs = "cr") +
+        ti(iteration, frequency, bs = "cr") +
         s(word, bs = "fs"),
     data = lexicon.change,
     method = "fREML"
@@ -130,10 +131,11 @@ r1 <- start_value_rho(glot.gam)
 glot.gam.ar <- bam(
     glot.prob ~
         frequency +
+        s(frequency, bs = "cr") +
         s(iteration, bs = "cr") +
-        s(iteration, by = frequency, bs = "cr"),
+        ti(iteration, frequency, bs = "cr"),
     data = lexicon.change,
-    method = "fREML",
+    method = "ML",
     rho = r1,
     AR.start = lexicon.change$start.event
 )
@@ -142,11 +144,12 @@ summary(glot.gam.ar)
 
 glot.gam.ar.null <- bam(
     glot.prob ~
-#        frequency +
+        frequency +
+        s(frequency, bs = "cr") +
         s(iteration, bs = "cr"),
-#        s(iteration, by = frequency, bs = "cr"),
+#        ti(iteration, frequency, bs = "cr"),
     data = lexicon.change,
-    method = "fREML",
+    method = "ML",
     rho = r1,
     AR.start = lexicon.change$start.event
 )
@@ -160,8 +163,7 @@ acf_resid(glot.gam.ar, split_pred="AR.start")
 
 
 ```{r}
-fvisgam(glot.gam.ar, view = c("iteration","frequency"),
-        ylim = quantile(lexicon.change$frequency, c(0, 1))
+fvisgam(glot.gam.ar, view = c("iteration","frequency")
         )
 ```
 
