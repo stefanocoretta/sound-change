@@ -101,6 +101,13 @@ lexicon.change %>%
 
 ```{r}
 lexicon.change %>%
+    filter(iteration < 501) %>%
+    ggplot(aes(iteration, glot.prob, colour = freq.bin)) +
+    geom_smooth()
+```
+
+```{r}
+lexicon.change %>%
     ggplot(aes(iteration, glot.prob, group = word, colour = freq.bin)) +
     geom_line(stat = "smooth", method = "loess", alpha = 0.5, se = FALSE)
 ```
