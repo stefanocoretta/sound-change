@@ -534,21 +534,21 @@ lexicon_3 %>%
     geom_smooth(aes(colour = vowel))
 ```
 
-```{r}
+```{r 3-vowel-freq-line}
 lexicon_3 %>%
     ggplot(aes(time, f1_mean, colour = frequency, group = word)) +
     geom_line() +
     facet_grid(. ~ vowel)
 ```
 
-```{r}
+```{r 3-vowel-bin-line}
 lexicon_3 %>%
     ggplot(aes(time, f1_mean, colour = freq_bin, group = word)) +
     geom_line(alpha = 0.5) +
     facet_grid(. ~ vowel)
 ```
 
-```{r}
+```{r 3-vowel-bin-smooth}
 lexicon_3 %>%
     ggplot(aes(time, f1_mean, colour = freq_bin)) +
     geom_point(alpha = 0.1, size = 0.5) +
@@ -556,7 +556,7 @@ lexicon_3 %>%
     facet_grid(. ~ vowel)
 ```
 
-```{r}
+```{r 3-f1-sequence}
 lexicon_3 %>%
     filter(time == 0) %>%
     ggplot(aes(frequency, f1_mean)) +
@@ -579,7 +579,7 @@ lexicon_3 %>%
     ylim(5, 7)
 ```
 
-```{r vowel-plot-3}
+```{r 3-vowel-plot}
 lexicon_3 %>%
     filter(time == 0) %>%
     ggplot(aes(f1_mean, f2_mean, colour = vowel)) +
