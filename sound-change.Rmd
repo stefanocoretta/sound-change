@@ -692,3 +692,46 @@ fvisgam(lexicon_2_gam, view = c("time","frequency"),
         rm.ranef = TRUE
         )
 ```
+
+## Three vowels, F1, F2
+
+```{r lexicon-3-prep}
+lexicon_3 <- lexicon_3 %>%
+    mutate(
+        vowel_ord = ordered(vowel, levels = c("BART", "BAT")),
+        word_ord = as.ordered(word)
+    ) %>%
+    arrange(word, time) %>%
+    create_event_start("word")
+```
+
+```{r lexicon-3-gam}
+lexicon_3_gam <- bam(
+    f1_mean ~
+        frequency +
+        vowel_ord +
+        s(time, bs = "cr") +
+        s(time, bs = "cr", by = frequency) +
+        s(time, bs = "cr", by = vowel_ord) +
+        s(frequency, bs = "cr") +
+        ti(time, frequency) +
+        ti(time, frequency, by = vowel_ord) +
+        s(time, word_ord, bs = "fs"),
+    data = lexicon_3,
+    method = "fREML"
+)
+
+summary(lexicon_3_gam)
+```
+
+```{r lexicon-3-gam-plot}
+fvisgam(lexicon_3_gam, view = c("time","frequency"),
+        cond = list(vowel_ord = "BART"),
+        rm.ranef = TRUE
+        )
+
+fvisgam(lexicon_3_gam, view = c("time","frequency"),
+        cond = list(vowel_ord = "BAT"),
+        rm.ranef = TRUE
+        )
+```
