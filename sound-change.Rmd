@@ -313,25 +313,66 @@ sound_shift_2 <- function(lexicon_size, vowels, group_size, formants_1, formants
                 )
                 
             } else {# if length(vowels) == 3
+                pool_max <- suppressWarnings(max(unlist(
+                    lexicon_f1[which(lexicon_vowel[which(lexicon_class == word_class)] == vowels[1])]
+                )))
+                
                 pool_min <- suppressWarnings(min(unlist(
                     lexicon_f1[which(lexicon_vowel[which(lexicon_class == word_class)] == vowels[1])]
-                    )
-                ))
+                )))
                 
-                pool_max <- suppressWarnings(max(unlist(
+                pool_max_2 <- suppressWarnings(max(unlist(
+                    lexicon_f2[which(lexicon_vowel[which(lexicon_class == word_class)] == vowels[1])]
+                )))
+                
+                pool_min_2 <- suppressWarnings(min(unlist(
+                    lexicon_f2[which(lexicon_vowel[which(lexicon_class == word_class)] == vowels[1])]
+                )))
+                
+                pool_max_3 <- suppressWarnings(max(unlist(
                     lexicon_f1[which(lexicon_vowel[which(lexicon_class == word_class)] == vowels[3])]
-                    )
-                ))
+                )))
                 
-                encode <- get_encode(outcome >= pool_min || outcome <= pool_max)
+                pool_min_3 <- suppressWarnings(min(unlist(
+                    lexicon_f1[which(lexicon_vowel[which(lexicon_class == word_class)] == vowels[3])]
+                )))
+                
+                pool_max_2_3 <- suppressWarnings(max(unlist(
+                    lexicon_f2[which(lexicon_vowel[which(lexicon_class == word_class)] == vowels[3])]
+                )))
+                
+                pool_min_2_3 <- suppressWarnings(min(unlist(
+                    lexicon_f2[which(lexicon_vowel[which(lexicon_class == word_class)] == vowels[3])]
+                )))
+                
+                encode <- get_encode(
+                    (outcome >= pool_min & outcome <= pool_max) &
+                        (outcome_2 >= pool_min_2 & outcome_2 <= pool_max_2) ||
+                        (outcome >= pool_min_3 & outcome <= pool_max_3) &
+                        (outcome_2 >= pool_min_2_3 & outcome_2 <= pool_max_2_3)
+                )
             }
         } else {# if vowel == vowels[3]
+            pool_max <- suppressWarnings(max(unlist(
+                lexicon_f1[which(lexicon_vowel[which(lexicon_class == word_class)] == vowels[2])]
+            )))
+            
             pool_min <- suppressWarnings(min(unlist(
                 lexicon_f1[which(lexicon_vowel[which(lexicon_class == word_class)] == vowels[2])]
-                )
-            ))
+            )))
             
-            encode <- get_encode(outcome >= pool_min)
+            pool_max_2 <- suppressWarnings(max(unlist(
+                lexicon_f2[which(lexicon_vowel[which(lexicon_class == word_class)] == vowels[2])]
+            )))
+            
+            pool_min_2 <- suppressWarnings(min(unlist(
+                lexicon_f2[which(lexicon_vowel[which(lexicon_class == word_class)] == vowels[2])]
+            )))
+            
+            encode <- get_encode(
+                (outcome >= pool_min & outcome <= pool_max) &
+                    (outcome_2 >= pool_min_2 & outcome_2 <= pool_max_2)
+            )
         }
         
         #### Encode ####
@@ -599,6 +640,58 @@ lexicon_3 %>%
     xlim(5, 7) + ylim(12, 13.5)
 ```
 
+# Three vowels, F1, F2
+
+## Simulation
+
+```{r lexicon-4}
+lexicon_4 <- sound_shift_2(
+    lexicon_size = 100,
+    vowels = c("BART", "BAT", "BET"),
+    group_size = 5,
+    formants_1 = c(6.5, 5.5, 4.5),
+    formants_2 = c(12.7, 13, 13.3),
+    biased_vowel = "BART",
+    bias = -0.3,
+    iterations = 200000,
+    save_freq = 10000
+) %>%
+    mutate(
+        freq_bin = ifelse(
+            frequency < max(frequency)/2,
+            "low",
+            "high"
+        )
+    )
+```
+
+```{r 4-vowel-bin-smooth}
+lexicon_4 %>%
+    ggplot(aes(time, f1_mean, colour = freq_bin)) +
+    geom_point(alpha = 0.1, size = 0.5) +
+    geom_smooth(se = FALSE) +
+    facet_grid(. ~ vowel)
+```
+
+```{r 4-vowel-plot}
+lexicon_4 %>%
+    filter(time == 0) %>%
+    ggplot(aes(f1_mean, f2_mean, colour = vowel)) +
+    geom_point() +
+    xlim(4, 7) + ylim(12, 14)
+
+lexicon_4 %>%
+    filter(time == 100000) %>%
+    ggplot(aes(f1_mean, f2_mean, colour = vowel)) +
+    geom_point() +
+    xlim(4, 7) + ylim(12, 14)
+
+lexicon_4 %>%
+    filter(time == 200000) %>%
+    ggplot(aes(f1_mean, f2_mean, colour = vowel)) +
+    geom_point() +
+    xlim(4, 7) + ylim(12, 14)
+```
 
 # Analysis
 
