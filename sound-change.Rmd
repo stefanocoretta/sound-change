@@ -14,7 +14,7 @@ library(lme4)
 library(effects)
 library(itsadug)
 library(tidymv)
-set.seed(8788)
+seed <- 8788
 ```
 
 # Functions
@@ -421,6 +421,7 @@ sound_shift_2 <- function(lexicon_size, vowels, group_size, formants_1, formants
 ## Simulation
 
 ```{r lexicon}
+set.seed(seed)
 lexicon <- sound_shift(
     lexicon_size = 100,
     vowels = c("BART", "BAT"),
@@ -499,6 +500,7 @@ lexicon %>%
 ## Simulation
 
 ```{r lexicon-2}
+set.seed(seed)
 lexicon_2 <- sound_shift(
     lexicon_size = 100,
     vowels = c("BART", "BAT", "BET"),
@@ -546,6 +548,7 @@ lexicon_2 %>%
 ## Simulation
 
 ```{r lexicon-3}
+set.seed(seed)
 lexicon_3 <- sound_shift_2(
     lexicon_size = 100,
     vowels = c("BART", "BAT"),
@@ -645,6 +648,7 @@ lexicon_3 %>%
 ## Simulation
 
 ```{r lexicon-4}
+set.seed(seed)
 lexicon_4 <- sound_shift_2(
     lexicon_size = 100,
     vowels = c("BART", "BAT", "BET"),
