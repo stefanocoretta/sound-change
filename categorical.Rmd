@@ -175,3 +175,47 @@ fvisgam(glot.gam.ar, view = c("iteration","frequency")
 ```
 
 
+
+# CRE
+
+```{r}
+create_lexicon_cre <- function(size) {
+    iteration <- rep_len(1, size)
+    word <- seq(1:size)
+    frequency <- seq(1:size)
+    glottalised <- "no"
+    lexicon <- tibble(iteration, word, frequency, glottalised)
+    return(lexicon)
+}
+
+cre <- function(size, iterations) {
+    lexicon <- create_lexicon_cre(size)
+    lexicon_change <- lexicon
+    probability <- 0
+    
+    for (i in 1:iterations) {
+        word <- sample(1:size, 1, prob = lexicon$frequency)
+        frequency <- lexicon$frequency[word]
+        
+        is_glottalised <- sample(c("yes", "no"), 1, prob = c(probability, 1 - probability))
+        
+        current <- tibble("iteration" = i, word, frequency, "glottalised" = is_glottalised)
+        
+        lexicon_change <- rbind(lexicon_change, current)
+        
+        probability <- probability + 0.001
+    }
+    
+    return(lexicon_change)
+}
+```
+
+```{r}
+set.seed(1234)
+lexicon <- cre(1000, 500)
+```
+
+```{r}
+
+```
+
