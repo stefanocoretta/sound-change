@@ -672,7 +672,7 @@ lexicon_4 <- sound_shift_2(
 ```{r 4-vowel-bin-smooth}
 lexicon_4 %>%
     ggplot(aes(time, f1_mean, colour = freq_bin)) +
-    geom_point(alpha = 0.1, size = 0.5) +
+    geom_jitter(alpha = 0.2, size = 0.5) +
     geom_smooth(se = FALSE) +
     facet_grid(. ~ vowel)
 ```
@@ -790,20 +790,51 @@ fvisgam(lexicon_2_gam, view = c("time","frequency"),
         )
 ```
 
+```{r lexicon-2-smooths-BAT}
+plot_smooth(
+    lexicon_2_gam,
+    view = "time",
+    cond = list(frequency = 10, vowel_ord = "BAT"),
+    rug = F,
+    col = "red",
+    rm.ranef = TRUE
+)
+
+plot_smooth(
+    lexicon_2_gam,
+    view = "time",
+    cond = list(frequency = 20, vowel_ord = "BAT"),
+    rug = F,
+    col = "blue",
+    add = T,
+    rm.ranef = TRUE
+)
+
+plot_smooth(
+    lexicon_2_gam,
+    view = "time",
+    cond = list(frequency = 30, vowel_ord = "BAT"),
+    rug = F,
+    col = "green",
+    add = T,
+    rm.ranef = TRUE
+)
+```
+
 ## Three vowels, F1, F2
 
-```{r lexicon-3-prep}
-lexicon_3 <- lexicon_3 %>%
+```{r lexicon-4-prep}
+lexicon_4 <- lexicon_4 %>%
     mutate(
-        vowel_ord = ordered(vowel, levels = c("BART", "BAT")),
+        vowel_ord = ordered(vowel, levels = c("BART", "BAT", "BET")),
         word_ord = as.ordered(word)
     ) %>%
     arrange(word, time) %>%
     create_event_start("word")
 ```
 
-```{r lexicon-3-gam}
-lexicon_3_gam <- bam(
+```{r lexicon-4-gam}
+lexicon_4_gam <- bam(
     f1_mean ~
         frequency +
         vowel_ord +
@@ -814,21 +845,57 @@ lexicon_3_gam <- bam(
         ti(time, frequency) +
         ti(time, frequency, by = vowel_ord) +
         s(time, word_ord, bs = "fs"),
-    data = lexicon_3,
+    data = lexicon_4,
     method = "fREML"
 )
 
-summary(lexicon_3_gam)
+summary(lexicon_4_gam)
 ```
 
-```{r lexicon-3-gam-plot}
-fvisgam(lexicon_3_gam, view = c("time","frequency"),
+```{r lexicon-4-gam-plot}
+fvisgam(lexicon_4_gam, view = c("time","frequency"),
         cond = list(vowel_ord = "BART"),
         rm.ranef = TRUE
         )
 
-fvisgam(lexicon_3_gam, view = c("time","frequency"),
+fvisgam(lexicon_4_gam, view = c("time","frequency"),
         cond = list(vowel_ord = "BAT"),
         rm.ranef = TRUE
         )
+
+fvisgam(lexicon_4_gam, view = c("time","frequency"),
+        cond = list(vowel_ord = "BET"),
+        rm.ranef = TRUE
+        )
+```
+
+```{r lexicon-4-smooths-BAT}
+plot_smooth(
+    lexicon_4_gam,
+    view = "time",
+    cond = list(frequency = 10, vowel_ord = "BAT"),
+    rug = F,
+    col = "red",
+    rm.ranef = TRUE
+)
+
+plot_smooth(
+    lexicon_4_gam,
+    view = "time",
+    cond = list(frequency = 20, vowel_ord = "BAT"),
+    rug = F,
+    col = "blue",
+    add = T,
+    rm.ranef = TRUE
+)
+
+plot_smooth(
+    lexicon_4_gam,
+    view = "time",
+    cond = list(frequency = 30, vowel_ord = "BAT"),
+    rug = F,
+    col = "green",
+    add = T,
+    rm.ranef = TRUE
+)
 ```
