@@ -416,7 +416,7 @@ sound_shift_2 <- function(lexicon_size, vowels, group_size, formants_1, formants
 }
 ```
 
-# Two vowels, F1
+# Two vowels, F1 (1)
 
 ## Simulation
 
@@ -495,7 +495,7 @@ lexicon %>%
     ylim(5, 7)
 ```
 
-# Three vowels, F1
+# Three vowels, F1 (2)
 
 ## Simulation
 
@@ -543,7 +543,7 @@ lexicon_2 %>%
     facet_grid(. ~ vowel)
 ```
 
-# Two vowels, F1, F2
+# Two vowels, F1, F2 (3)
 
 ## Simulation
 
@@ -643,7 +643,7 @@ lexicon_3 %>%
     xlim(5, 7) + ylim(12, 13.5)
 ```
 
-# Three vowels, F1, F2
+# Three vowels, F1, F2 (4)
 
 ## Simulation
 
