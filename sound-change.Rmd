@@ -543,6 +543,14 @@ lexicon_2 %>%
     facet_grid(. ~ vowel)
 ```
 
+```{r}
+lexicon_2 %>%
+    ggplot(aes(time, f1_mean, colour = freq_bin)) +
+    geom_point(alpha = 0.1, size = 0.5) +
+    geom_smooth(se = FALSE) +
+    facet_grid(. ~ vowel)
+```
+
 # Two vowels, F1, F2 (3)
 
 ## Simulation
