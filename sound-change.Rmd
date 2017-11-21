@@ -14,6 +14,7 @@ library(lme4)
 library(effects)
 library(itsadug)
 library(tidymv)
+fig_path <- "./figures"
 seed <- 8788
 ```
 
@@ -464,12 +465,13 @@ lexicon %>%
     facet_grid(. ~ vowel)
 ```
 
-```{r}
-lexicon %>%
+```{r 1-vowel-bin-smooth}
+plot_1 <- lexicon %>%
     ggplot(aes(time, f1_mean, colour = freq_bin)) +
     geom_point(alpha = 0.1, size = 0.5) +
     geom_smooth(se = FALSE) +
     facet_grid(. ~ vowel)
+plot_1
 ```
 
 ```{r}
@@ -543,12 +545,13 @@ lexicon_2 %>%
     facet_grid(. ~ vowel)
 ```
 
-```{r}
-lexicon_2 %>%
+```{r 2-vowel-bin-smooth}
+plot_2 <- lexicon_2 %>%
     ggplot(aes(time, f1_mean, colour = freq_bin)) +
     geom_point(alpha = 0.1, size = 0.5) +
     geom_smooth(se = FALSE) +
     facet_grid(. ~ vowel)
+plot_2
 ```
 
 # Two vowels, F1, F2 (3)
@@ -601,11 +604,12 @@ lexicon_3 %>%
 ```
 
 ```{r 3-vowel-bin-smooth}
-lexicon_3 %>%
+plot_3 <- lexicon_3 %>%
     ggplot(aes(time, f1_mean, colour = freq_bin)) +
     geom_point(alpha = 0.1, size = 0.5) +
     geom_smooth(se = FALSE) +
     facet_grid(. ~ vowel)
+plot_3
 ```
 
 ```{r 3-f1-sequence}
@@ -678,11 +682,12 @@ lexicon_4 <- sound_shift_2(
 ```
 
 ```{r 4-vowel-bin-smooth}
-lexicon_4 %>%
+plot_4 <- lexicon_4 %>%
     ggplot(aes(time, f1_mean, colour = freq_bin)) +
     geom_jitter(alpha = 0.2, size = 0.5) +
     geom_smooth(se = FALSE) +
     facet_grid(. ~ vowel)
+plot_4
 ```
 
 ```{r 4-vowel-plot}
@@ -938,3 +943,14 @@ plot_smooth(
     rm.ranef = TRUE
 )
 ```
+
+# Save plots
+
+```{r vowel-bin-plots}
+graphics <- list(xlab("Iterations"), ylab("Mean F1"), scale_color_discrete(name = "Frequency bins"), theme(legend.position = "top"))
+ggsave(plot_1 + graphics, filename = "plot_1.pdf", path = fig_path, width = 7, height = 3)
+ggsave(plot_2 + graphics, filename = "plot_2.pdf", path = fig_path, width = 7, height = 3)
+ggsave(plot_3 + graphics, filename = "plot_3.pdf", path = fig_path, width = 7, height = 3)
+ggsave(plot_4 + graphics, filename = "plot_4.pdf", path = fig_path, width = 7, height = 3)
+```
+
