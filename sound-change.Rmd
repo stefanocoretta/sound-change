@@ -712,7 +712,7 @@ lexicon_4 %>%
 
 # Analysis
 
-## Two vowels, F1
+## Two vowels, F1 (1)
 
 ```{r lexicon-prep}
 lexicon <- lexicon %>%
@@ -755,7 +755,7 @@ fvisgam(lexicon_gam, view = c("time","frequency"),
         )
 ```
 
-## Three vowels, F1
+## Three vowels, F1 (2)
 
 ```{r lexicon-2-prep}
 lexicon_2 <- lexicon_2 %>%
@@ -834,7 +834,7 @@ plot_smooth(
 )
 ```
 
-## Two vowels, F1, F2
+## Two vowels, F1, F2 (3)
 
 ```{r lexicon-3-prep}
 lexicon_3 <- lexicon_3 %>%
@@ -865,7 +865,7 @@ lexicon_3_gam <- bam(
 summary(lexicon_3_gam)
 ```
 
-## Three vowels, F1, F2
+## Three vowels, F1, F2 (4)
 
 ```{r lexicon-4-prep}
 lexicon_4 <- lexicon_4 %>%
