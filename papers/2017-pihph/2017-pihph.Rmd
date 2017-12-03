@@ -1,0 +1,16 @@
+---
+title: Modelling frequency effects in sound change chains
+author:
+- name: Stefano Coretta
+  affiliation: The University of Manchester
+  email: stefano.coretta@manchester.ac.uk
+output: pihph::pihph_article
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Methods
+
+
