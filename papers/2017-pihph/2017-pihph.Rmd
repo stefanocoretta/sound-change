@@ -13,4 +13,11 @@ knitr::opts_chunk$set(echo = TRUE)
 
 # Methods
 
+```{r}
+greeting <- function() {
+    print("Greetings, Earthlings.")
+}
+
+greeting()
+```
 
