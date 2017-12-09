@@ -13,11 +13,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 # Methods
 
-```{r}
-greeting <- function() {
-    print("Greetings, Earthlings.")
-}
-
-greeting()
-```
-
+Four simulations were implemented in R [@r-core-team2017] to test the behaviour of the model described in ...
+The simulation starts with the creation of a lexicon of 100 lexical items.
+50 words are assigned to the BART category, while the remaining 50 to the BAT category.
+Within each category, lexical frequency from 1 to 50 is assigned to each lexical item, so that there are a BART and a BAT word of frequency 1, a BART and a BAT word of frequency 2, etc.
