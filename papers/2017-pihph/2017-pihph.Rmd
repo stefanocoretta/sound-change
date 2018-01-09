@@ -32,3 +32,9 @@ This will depend on its lexical frequency and most importantly on whether the to
 If the token is not ambiguous, i.e. if it is surrounded only by tokens of the same category, then the probability of being encoded back in memory is set to 1 (such a word is always sent back to memory).
 If the token is ambiguous, i.e. if it falls in an area of overlap containing tokens of both categories, then the probability of being encoded in memory is set as a function of the lexical frequency of the relative word: p(x|M) = frequency(x) / maximum(frequency).
 <!-- Need to make the equation and make it clearer -->
+
+Once a word has been encoded in memory (or not, depending on the outcome of the encoding function), a new cycle of the algorithm begins and another word is chosen, produced and encoded (or not).
+
+## Statistical analysis
+
+Generalised additive mixed model are used for statistical analysis. 
