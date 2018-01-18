@@ -4,7 +4,10 @@ author:
 - name: Stefano Coretta
   affiliation: The University of Manchester
   email: stefano.coretta@manchester.ac.uk
-output: pihph::pihph_article
+output:
+    pihph::pihph_article:
+        citation_package: natbib
+bibliography: linguistics.bib
 ---
 
 ```{r setup, include=FALSE}
@@ -37,4 +40,31 @@ Once a word has been encoded in memory (or not, depending on the outcome of the 
 
 ## Statistical analysis
 
-Generalised additive mixed model are used for statistical analysis. 
+Generalised additive mixed model are used for statistical analysis.
+
+# Results
+
+<!-- need to reproduce figures with jitter -->
+
+\begin{figure}
+\includegraphics{../../figures/plot_1.pdf}
+\includegraphics{../../figures/plot_2.pdf}
+\includegraphics{../../figures/plot_3.pdf}
+\includegraphics{../../figures/plot_4.pdf}
+\caption{Change in F3.}
+\label{f:results}
+\end{figure}
+
+Starting from simulation 1, a general trend of decreasing mean F1 through time can be observed both in BART and BAT words, as shown in the top panel of \Cref{f:results}.
+The graph also shows the decrease of mean F1 for low and high frequency words separately.
+The frequency bins were defined as the lower half (1--25) and upper half (26--50) of the frequency range (1--50).
+Mean F1 decreases at a higher rate in low frequency than in high frequency words in BAT words.
+The model in ... thus correctly pushes low frequency words faster, as it was supposed to.
+Unexpectedly, though, it is high frequency words that change at a higher rate in BART words, not low frequency words.
+The model in its current state thus predicts that the effect of frequency on chain sound changes differs depending whether the observed phonetic category is the pushing category or the pushed category.
+
+This pattern can be observed also in simulations 2 to 4.
+High frequency words change faster in the pushed category (BART), but low frequency ones do in the pushed category (BAT) or categories if there is more than one (BAT, BET).
+The main qualitative difference in these simulations if compared to simulation 1 is the magnitude of the effect of frequency, which is smaller.
+Simulations 2 and 4 also clearly show that both pushed categories (BAT, BET) undergo the effect of lexical frequency.
+<!-- this is very interesting -->
