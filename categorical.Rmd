@@ -12,7 +12,7 @@ theme_set(theme_bw())
 library(zipfR)
 library(mgcv)
 library(itsadug)
-options(contrasts = rep ("contr.treatment", 2))
+options(contrasts = rep("contr.treatment", 2))
 ```
 
 # Initialise
@@ -212,10 +212,25 @@ cre <- function(size, iterations) {
 
 ```{r}
 set.seed(1234)
-lexicon <- cre(1000, 500)
+lexicon <- cre(1000, 500) %>%
+    mutate(
+        glottalised_prob = as.numeric(as.factor(glottalised)),
+        freq_bin = ifelse(
+            frequency < 500,
+            "low",
+            "high"
+        )
+    )
 ```
 
 ```{r}
-
+lexicon %>%
+    ggplot(aes(iteration, glottalised_prob)) +
+    geom_smooth()
 ```
 
+```{r}
+lexicon %>%
+    ggplot(aes(iteration, glottalised_prob, colour = freq_bin)) +
+    geom_smooth(method = "loess", span = 100)
+```
