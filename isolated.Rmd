@@ -231,22 +231,11 @@ u.fronting.gamm <- bam(
     f2 ~
         frequency +
         s(time, bs = "cr") +
-        s(time, by = frequency, bs = "cr"),
+        s(frequency, bs = "cr") +
+        ti(time, frequency),
     data = change,
     method = "ML"
 )
-
-summary(u.fronting.gamm)
-
-u.fronting.gamm.null <- bam(
-    f2 ~
-        frequency +
-        s(time, bs = "cr"),
-    data = change,
-    method = "ML"
-)
-
-compareML(u.fronting.gamm.null, u.fronting.gamm)
 ```
 
 ```{r gamm-acr}
@@ -260,9 +249,10 @@ u.fronting.gamm <- bam(
     f2 ~
         frequency +
         s(time, bs = "cr") +
-        s(time, by = frequency, bs = "cr"),
+        s(frequency, bs = "cr") +
+        ti(time, frequency),
     data = change,
-    method = "fREML",
+    method = "ML",
     rho = rho,
     AR.start = change$start.event
 )
@@ -272,9 +262,10 @@ summary(u.fronting.gamm)
 u.fronting.gamm.null <- bam(
     f2 ~
         frequency +
-        s(time, bs = "cr"),
+        s(time, bs = "cr") +
+        s(frequency, bs = "cr"),
     data = change,
-    method = "fREML",
+    method = "ML",
     rho = rho,
     AR.start = change$start.event
 )
@@ -287,9 +278,45 @@ acf_resid(u.fronting.gamm.null, split_pred="AR.start")
 ```
 
 ```{r simulation2-gam-ar-plot}
-fvisgam(u.fronting.gamm.null, view = c("time", "frequency"),
-        ylim = quantile(change$frequency, c(0, 1))
-        )
+fvisgam(
+    u.fronting.gamm,
+    view = c("time", "frequency")
+)
 ```
 
+
+```{r}
+plot_smooth(
+  u.fronting.gamm,
+  "time",
+  cond = list(
+    frequency = 100
+  ),
+  col = "red",
+  rug = FALSE,
+  n.grid = 20
+)
+plot_smooth(
+  u.fronting.gamm,
+  "time",
+  cond = list(
+    frequency = 200
+  ),
+  col = "green",
+  rug = FALSE,
+  add = TRUE,
+  n.grid = 20
+)
+plot_smooth(
+  u.fronting.gamm,
+  "time",
+  cond = list(
+    frequency = 300
+  ),
+  col = "blue",
+  rug = FALSE,
+  add = TRUE,
+  n.grid = 20
+)
+```
 
