@@ -101,9 +101,22 @@ lexicon.change %>%
 
 ```{r}
 lexicon.change %>%
+    ggplot(aes(iteration, glot.prob, colour = freq.bin)) +
+    geom_smooth(method = "lm")
+```
+
+```{r}
+lexicon.change %>%
     filter(iteration < 501) %>%
     ggplot(aes(iteration, glot.prob, colour = freq.bin)) +
     geom_smooth()
+```
+
+```{r}
+lexicon.change %>%
+    filter(iteration < 501) %>%
+    ggplot(aes(iteration, glot.prob, colour = freq.bin)) +
+    geom_smooth(method = "lm")
 ```
 
 ```{r}
@@ -124,7 +137,7 @@ lexicon.change <- lexicon.change %>%
 ```{r}
 glot.gam <- bam(
     glot.prob ~
-        frequency +
+        # frequency +
         s(frequency, bs = "cr") +
         s(iteration, bs = "cr") +
         ti(iteration, frequency, bs = "cr") +
@@ -137,7 +150,7 @@ r1 <- start_value_rho(glot.gam)
 
 glot.gam.ar <- bam(
     glot.prob ~
-        frequency +
+        # frequency +
         s(frequency, bs = "cr") +
         s(iteration, bs = "cr") +
         ti(iteration, frequency, bs = "cr"),
@@ -151,7 +164,7 @@ summary(glot.gam.ar)
 
 glot.gam.ar.null <- bam(
     glot.prob ~
-        frequency +
+        # frequency +
         s(frequency, bs = "cr") +
         s(iteration, bs = "cr"),
 #        ti(iteration, frequency, bs = "cr"),
@@ -165,13 +178,12 @@ compareML(glot.gam.ar, glot.gam.ar.null)
 ```
 
 ```{r}
-acf_resid(glot.gam.ar, split_pred="AR.start")
+acf_resid(glot.gam.ar, split_pred = "AR.start")
 ```
 
 
 ```{r}
-fvisgam(glot.gam.ar, view = c("iteration","frequency")
-        )
+fvisgam(glot.gam.ar, view = c("iteration","frequency"))
 ```
 
 
